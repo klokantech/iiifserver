@@ -111,19 +111,22 @@ void DeepZoom::run( Session* session, const std::string& argument ){
 
     char str[1024];
     snprintf( str, 1024,
-	      "Server: iipsrv/%s\r\n"
-	      "Content-Type: application/xml\r\n"
-	      "Cache-Control: max-age=%d\r\n"
-	      "Last-Modified: %s\r\n"
-	      "\r\n"
 	      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
 	      "<Image xmlns=\"http://schemas.microsoft.com/deepzoom/2008\"\r\n"
 	      "TileSize=\"%d\" Overlap=\"0\" Format=\"jpg\">"
 	      "<Size Width=\"%d\" Height=\"%d\"/>"
 	      "</Image>",
-	      VERSION, MAX_AGE, (*session->image)->getTimestamp().c_str(), tw, width, height );
+	      tw, width, height );
+    char maxAge[20];
+    snprintf( maxAge, 20, "max-age=%d", MAX_AGE);
 
-    session->out->printf( (const char*) str );
+    session->response->setContentType("application/xml");
+    session->response->setCacheControl(string(maxAge));
+    session->response->setLastModified((*session->image)->getTimestamp());
+    session->response->addResponse(string(str));
+    string respond = session->response->formatResponse();
+
+    session->out->printf(respond.c_str());
     session->response->setImageSent();
 
     return;
@@ -226,17 +229,17 @@ void DeepZoom::run( Session* session, const std::string& argument ){
 
 
 #ifndef DEBUG
-  char str[1024];
-  snprintf( str, 1024,
-	    "Server: iipsrv/%s\r\n"
-	    "Content-Type: image/jpeg\r\n"
-            "Content-Length: %d\r\n"
-	    "Cache-Control: max-age=%d\r\n"
-	    "Last-Modified: %s\r\n"
-	    "\r\n",
-	    VERSION, len, MAX_AGE, (*session->image)->getTimestamp().c_str() );
 
-  session->out->printf( (const char*) str );
+  char maxAge[20];
+  snprintf( maxAge, 20, "max-age=%d", MAX_AGE);
+
+  session->response->setContentType("image/jpeg");
+  session->response->setContentLength(len);
+  session->response->setCacheControl(string(maxAge));
+  session->response->setLastModified((*session->image)->getTimestamp().c_str());
+  string respond = session->response->formatResponse();
+
+  session->out->printf( respond.c_str() );
 #endif
 
 

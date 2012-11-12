@@ -37,7 +37,7 @@ enum ColourSpaces { GREYSCALE, sRGB, CIELAB };
 enum CompressionType { UNCOMPRESSED, JPEG, DEFLATE };
 
 /// Sample Types
-enum SampleType { FIXED, FLOAT };
+enum SampleType { _FIXED, _FLOAT };
 
 
 /// Class to represent a single image tile
@@ -119,7 +119,7 @@ class RawTile{
     width = w; height = h; bpc = b; dataLength = 0; data = NULL;
     tileNum = tn; resolution = res; hSequence = hs ; vSequence = vs;
     memoryManaged = 1; channels = c; compressionType = UNCOMPRESSED; quality = 0;
-    timestamp = 0; sampleType = FIXED; padded = false;
+    timestamp = 0; sampleType = _FIXED; padded = false;
   };
 
 
@@ -128,7 +128,7 @@ class RawTile{
     if( data && memoryManaged ){
       switch( bpc ){
       case 32:
-        if( sampleType == FLOAT ) delete[] (float*) data;
+        if( sampleType == _FLOAT ) delete[] (float*) data;
         else delete[] (int*) data;
         break;
       case 16:
@@ -163,7 +163,7 @@ class RawTile{
 
     switch( bpc ){
       case 32:
-	if( sampleType == FLOAT ) data = new float[dataLength/4];
+	if( sampleType == _FLOAT ) data = new float[dataLength/4];
 	else data = new int[dataLength/4];
 	break;
       case 16:
@@ -202,7 +202,7 @@ class RawTile{
 
     switch( bpc ){
       case 32:
-	if( sampleType == FLOAT ) data = new float[dataLength/4];
+	if( sampleType == _FLOAT ) data = new float[dataLength/4];
 	else data = new int[dataLength/4];
 	break;
       case 16:

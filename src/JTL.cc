@@ -129,18 +129,17 @@ void JTL::run( Session* session, const std::string& argument ){
 
 
 #ifndef DEBUG
-  char str[1024];
+  char maxAge[20];
+  snprintf(maxAge, 20, "max-age=%d", MAX_AGE);
 
-  snprintf( str, 1024,
-	    "Server: iipsrv/%s\r\n"
-	    "Content-Type: image/jpeg\r\n"
-            "Content-Length: %d\r\n"
-	    "Cache-Control: max-age=%d\r\n"
-	    "Last-Modified: %s\r\n"
-	    "\r\n",
-	    VERSION, len, MAX_AGE, (*session->image)->getTimestamp().c_str() );
+  session->response->setContentType("image/jpeg");
+  session->response->setContentLength(len);
+  session->response->setCacheControl(string(maxAge));
+  session->response->setLastModified((*session->image)->getTimestamp().c_str());
 
-  session->out->printf( str );
+  string respond = session->response->formatResponse();
+
+  session->out->printf( respond.c_str() );
 #endif
 
 

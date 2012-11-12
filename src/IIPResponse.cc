@@ -19,6 +19,7 @@
 */
 
 #include "IIPResponse.h"
+#include "Environment.h"
 #include <cstdio>
 #include <cstring>
 
@@ -28,14 +29,19 @@ using namespace std;
 
 IIPResponse::IIPResponse(){
 
+  eof = "\r\n";
   responseBody = "";
   error = "";
   protocol = "";
-  server = "Server: iipsrv/" + string(VERSION);
+  server = "Server: iipsrv/" + string(VERSION) + eof;
   modified = "";
-  cache = "Cache-Control: max-age=86400";
-  mimeType = "Content-Type: application/vnd.netfpx";
-  eof = "\r\n";
+  cache = "";
+  mimeType = "application/vnd.netfpx" + eof;
+  corsAccessControl = Environment::getCors();
+  contentDisposition = "";
+  contentLength = 0;
+  status = "";
+  transferEncoding = "";
   sent = false;
 }
 
@@ -93,17 +99,48 @@ void IIPResponse::setError( const string& code, const string& arg ){
 
 string IIPResponse::formatResponse() {
 
-  /* We always need 2 sets of eof after the MIME headers to stop apache from complaining
+  /* We always need 2 sets of eof after headers, right before body/error
    */
-  string response;
+  string response, modifiedTmp, cacheTmp, mimeTypeTmp, transferEncodingTmp, contentLengthTmp,
+         errorTmp, corsAccessControlTmp ,statusTmp, contentDispositionTmp = "";
+  // add header names to the values;
+  if( !modified.empty() )  modifiedTmp = "Last-Modified: " + modified + eof;
+  if( !cache.empty() )  cacheTmp = "Cache-Control: " + cache + eof;
+  if( !mimeType.empty() )  mimeTypeTmp = "Content-Type: " + mimeType + eof;
+  if( !corsAccessControl.empty() )  corsAccessControlTmp = "Access-Control-Allow-Origin: " + corsAccessControl + eof;
+  if( !status.empty() )  statusTmp = "Status: " + status + eof;
+  if( !contentDisposition.empty() )  contentDispositionTmp = "Content-Disposition: " + contentDisposition + eof;
+  if( !transferEncoding.empty() )  transferEncodingTmp = "Transfer-Encoding: " + transferEncoding + eof;
+  if( contentLength > 0 ) {
+    char intToStrTmp[40];
+    snprintf(intToStrTmp, 40, "Content-Length: %d", contentLength);
+    contentLengthTmp = string(intToStrTmp) + eof;
+  }
+
   if( error.length() ){
-    response = server + eof + "Cache-Control: no-cache" + eof + mimeType + eof +
-      "Status: 400 Bad Request" + eof +
-      "Content-Disposition: inline;filename=\"IIPisAMadGameClosedToOurUnderstanding.netfpx\"" +
-      eof + eof + error;
+    if( status.empty() )  statusTmp = "Status: 400 Bad Request" + eof;//default error
+
+    response = server
+              + statusTmp
+              + "Cache-Control: no-cache" + eof //always don't cache errors
+              + mimeTypeTmp
+              + contentDispositionTmp
+              + contentLengthTmp
+              + transferEncodingTmp
+              + eof + error;
   }
   else{
-    response = server + eof + cache + eof + modified + eof + mimeType + eof + eof + protocol + eof + responseBody;
+    response = server
+              + statusTmp
+              + corsAccessControlTmp
+              + cacheTmp
+              + modifiedTmp
+              + mimeTypeTmp
+              + contentDispositionTmp
+              + contentLengthTmp
+              + transferEncodingTmp
+              + protocol
+              + eof + responseBody;
   }
 
   return response;

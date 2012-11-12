@@ -38,10 +38,12 @@
 #define LIBMEMCACHED_SERVERS "localhost"
 #define LIBMEMCACHED_TIMEOUT 86400  // 24 hours
 #define INTERPOLATION 1
+#define CORS "*";
 
 
 
 #include <string>
+#include <algorithm>
 
 
 /// Class to obtain environment variables
@@ -212,6 +214,18 @@ class Environment {
     return interpolation;
   }
 
+  static std::string getCors(){
+    char* envpara = getenv( "CORS" );
+    std::string cors;
+    bool result;
+    if( envpara ) cors = std::string( envpara );
+    else cors = CORS;
+
+    std::transform( cors.begin(), cors.end(), cors.begin(), ::tolower );
+    if( cors == "no" ) cors = "";
+
+    return cors;
+  }
 
 };
 

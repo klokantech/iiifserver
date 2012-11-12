@@ -107,17 +107,19 @@ void Zoomify::run( Session* session, const std::string& argument ){
 
     int ntiles = (int) ceil( (double)width/tw ) * (int) ceil( (double)height/tw );
 
-    char str[1024];
-    snprintf( str, 1024,
-	      "Server: iipsrv/%s\r\n"
-	      "Content-Type: application/xml\r\n"
-	      "Cache-Control: max-age=%d\r\n"
-	      "Last-Modified: %s\r\n"
-	      "\r\n"
+    char maxAge[20];
+    snprintf( maxAge, 20, "max-age=%d", MAX_AGE );
+    char bodyString[256];
+    snprintf( bodyString, 256,
 	      "<IMAGE_PROPERTIES WIDTH=\"%d\" HEIGHT=\"%d\" NUMTILES=\"%d\" NUMIMAGES=\"1\" VERSION=\"1.8\" TILESIZE=\"%d\" />",
-	      VERSION, MAX_AGE,(*session->image)->getTimestamp().c_str(), width, height, ntiles, tw );
+	      width, height, ntiles, tw );
+    session->response->setContentType("application/xml");
+    session->response->setCacheControl(string(maxAge));
+    session->response->setLastModified((*session->image)->getTimestamp().c_str());
+    session->response->addResponse(bodyString);
 
-    session->out->printf( (const char*) str );
+    string respond = session->response->formatResponse();
+    session->out->printf( respond.c_str() );
     session->response->setImageSent();
 
     return;
@@ -207,17 +209,16 @@ void Zoomify::run( Session* session, const std::string& argument ){
 
 
 #ifndef DEBUG
-  char str[1024];
-  snprintf( str, 1024,
-	    "Server: iipsrv/%s\r\n"
-	    "Content-Type: image/jpeg\r\n"
-            "Content-Length: %d\r\n"
-	    "Cache-Control: max-age=%d\r\n"
-	    "Last-Modified: %s\r\n"
-	    "\r\n",
-	    VERSION, len, MAX_AGE, (*session->image)->getTimestamp().c_str() );
+  char maxAge[20];
+  snprintf( maxAge, 20, "max-age=%d", MAX_AGE );
 
-  session->out->printf( (const char*) str );
+  session->response->setContentType("image/jpeg");
+  session->response->setContentLength(len);
+  session->response->setCacheControl(string(maxAge));
+  session->response->setLastModified((*session->image)->getTimestamp().c_str());
+
+  string respond = session->response->formatResponse();
+  session->out->printf( respond.c_str() );
 #endif
 
 

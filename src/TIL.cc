@@ -109,16 +109,16 @@ void TIL::run( Session* session, const std::string& a ){
   /* Only send our MIME type once
    */
   if( (endx >= startx) && (endy >= starty) ){
-    char str[1024];
-    snprintf( str, 1024,
-	      "Server: iipsrv/%s\r\n"
-	      "Content-Type: application/vnd.netfpx\r\n"
-	      "Cache-Control: max-age=%d\r\n"
-	      "Last-Modified: %s\r\n"
-	      "\r\n",
-	      VERSION, MAX_AGE, (*session->image)->getTimestamp().c_str() );
 
-    session->out->printf( (const char*)str );
+    char maxAge[20];
+    snprintf( maxAge, 20, "max-age=%d", MAX_AGE );
+
+    session->response->setContentType("application/vnd.netfpx");
+    session->response->setCacheControl(string(maxAge));
+    session->response->setLastModified((*session->image)->getTimestamp().c_str());
+
+    string respond = session->response->formatResponse();
+    session->out->printf( respond.c_str() );
   }
 
 

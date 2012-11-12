@@ -155,20 +155,17 @@ void CVT::run( Session* session, const std::string& a ){
     string filename = (*session->image)->getImagePath();
     int pos = filename.rfind(separator)+1;
     string basename = filename.substr( pos, filename.rfind(".")-pos );
-
-    char str[1024];
-    snprintf( str, 1024, "Server: iipsrv/%s\r\n"
-	                 "Cache-Control: max-age=%d\r\n"
-			 "Last-Modified: %s\r\n"
- 			 "Content-Type: image/jpeg\r\n"
-			 "Content-Disposition: inline;filename=\"%s.jpg\"\r\n"
+    char str[1024]; //is also used in chunked transfer
+    snprintf(str, 1024,"max-age=%d", MAX_AGE);
+    session->response->setCacheControl(string(str));
+    session->response->setLastModified((*session->image)->getTimestamp());
+    session->response->setContentType("image/jpeg");
+    session->response->setContentDisposition("inline;filename=\"" + basename + ".jpg\"");
 #ifdef CHUNKED
-	                 "Transfer-Encoding: chunked\r\n"
+    session->response->setTransferEncoding("chunked");
 #endif
-	                 "\r\n",
-	                 VERSION, MAX_AGE, (*session->image)->getTimestamp().c_str(), basename.c_str() );
-
-    session->out->printf( (const char*) str );
+    string header = session->response->formatResponse();
+    session->out->printf( header.c_str() );
 #endif
 
     // Get our requested region from our TileManager

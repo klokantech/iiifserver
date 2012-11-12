@@ -597,7 +597,7 @@ int main( int argc, char *argv[] )
 
         default:
           if( loglevel >= 1 ){
-	    logfile << "Unsupported HTTP status code: " << code << endl << endl;
+	    logfile << "HTTP status code: " << code << endl << endl;
 	  }
        }
     }
