@@ -1,0 +1,17 @@
+<html xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <head>
+    <script src="/js/OpenLayers.js" type="text/javascript"></script>
+    <script>
+      function openlayers_init() {
+        var url = document.URL.toString().replace(".jp2", "/");
+        init(url);
+      }
+    </script>
+  </head>
+  <body onload="openlayers_init();">
+    <div id="ol-wrapper">
+      <div id="ol-image">
+      </div>
+    </div>
+  </body>
+</html>

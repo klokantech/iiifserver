@@ -1,0 +1,57 @@
+<VirtualHost *:80>
+RewriteEngine On
+
+alias /imageserver/ /imageserver-data/
+
+        <IfModule mod_fcgid.c>
+                # Create a directory for the iipsrv binary
+                ScriptAlias /fcgi-bin/ "/usr/lib/cgi-bin/"
+                # Set the options on that directory
+                <Directory "/usr/lib/cgi-bin/">
+                        AllowOverride None
+                        Options +FollowSymlinks
+                        Order allow,deny
+                        Allow from all
+                </Directory>
+
+                # Set our environment variables for the IIP server
+                FcgidInitialEnv VERBOSITY "5"
+                FcgidInitialEnv LOGFILE "/tmp/iipsrv.log"
+                FcgidInitialEnv MAX_IMAGE_CACHE_SIZE "10"
+                FcgidInitialEnv JPEG_QUALITY "50"
+                FcgidInitialEnv MAX_CVT "3000"
+                FcgidInitialEnv FILESYSTEM_PREFIX "/imageserver-data/"
+                #FcgidInitialEnv WATERMARK "/var/www/localhost/mzk.tif"
+                #FcgidInitialEnv WATERMARK_PROBABILITY "1"
+                #FcgidInitialEnv WATERMARK_OPACITY "0.5"
+                #dodal jsem na zaklade Petrova doporuceni - Rehan
+                FcgidInitialEnv MAX_LAYERS "-1"
+        </IfModule>
+
+
+        <Directory /imageserver-data/>
+                <IfModule mod_rewrite.c>
+                        RewriteEngine on
+                        Options +FollowSymlinks
+
+                        RewriteRule ^([a-zA-Z0-9_\/\.\-]*)\/ImageProperties.xml$ /fcgi-bin/iipsrv.fcgi?Zoomify=$1.jp2/ImageProperties.xml [L]
+                        RewriteRule ^([a-zA-Z0-9_\/\.\-]*)\/(TileGroup[0-9]*)\/([0-9]*-[0-9]*-[0-9]*\.jpg)$ /fcgi-bin/iipsrv.fcgi?Zoomify=$1.jp2/$2/$3 [L]
+                        RewriteRule ^([a-zA-Z0-9_\/\.\-]*)\/preview.jpg$ /fcgi-bin/iipsrv.fcgi?FIF=$1.jp2&wid=50&cvt=jpeg& [L]
+                        RewriteRule ^([a-zA-Z0-9_\/\.\-]*)\/thumb.jpg$ /fcgi-bin/iipsrv.fcgi?FIF=$1.jp2&hei=128&cvt=jpeg& [L]
+                        RewriteRule ^([a-zA-Z0-9_\/\.\-]*)\/large.jpg$ /fcgi-bin/iipsrv.fcgi?FIF=$1.jp2&wid=500&cvt=jpeg& [L]
+                        RewriteRule ^([a-zA-Z0-9_\/\.\-]*)\/big.jpg$ /fcgi-bin/iipsrv.fcgi?FIF=$1.jp2&wid=1500&cvt=jpeg& [L]
+                        RewriteRule ^([a-zA-Z0-9_\/\.\-]*)\/deepzoom.dzi$ /fcgi-bin/iipsrv.fcgi?DeepZoom=$1.jp2.dzi [L]
+                        RewriteRule ^([a-zA-Z0-9_\/\.\-]*)\/deepzoom_files/([0-9]*)/([0-9]+)_([0-9]+).jpg$   /fcgi-bin/iipsrv.fcgi?DeepZoom=$1.jp2_files/$2/$3_$4.jpg [L]
+                        RewriteRule ^(\/[A-Za-z0-9]+\/[0-9]+\/[0-9]+\/[0-9]+\/[0-9a-zA-Z_]+)$ /view_map.php?path=$1 [L]
+ 	                RewriteRule ^(\/[A-Za-z0-9_\-]+).jp2$ /imageserver/index.html [L]
+                        RewriteRule ^(\/[A-Za-z0-9]+\/[0-9]+\/[0-9]+\/[0-9]+\/[A-Za-z0-9\.\-]+\/[0-9A-Za-z_]+)$ /view_map.php?path=$1 [L]
+                        RewriteRule ^(\/[A-Za-z0-9]+\/[0-9]+\/[0-9]+\/[0-9]+\/[0-9A-Za-z]+).jp2$ $1 [R]
+                        RewriteRule ^(\/[A-Za-z0-9]+\/[0-9]+\/[0-9]+\/[0-9]+\/[A-Za-z0-9\.\-]+\/[0-9A-Za-z_]+).jp2$ $1 [R]
+                        RewriteRule ^([a-zA-Z0-9_\/\.\-]*).jp2$ /index.html [L]
+                </IfModule>
+        </Directory>
+
+
+
+</VirtualHost>
+
