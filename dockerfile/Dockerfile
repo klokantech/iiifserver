@@ -13,5 +13,9 @@ ADD imageserver-site /etc/apache2/sites-enabled/000-default
 ADD index.html /var/www/index.html
 ADD js /var/www/js
 RUN adduser --disabled-password --gecos "" imageserver
-RUN ln -s /imageserver-data/.ssh /home/imageserver/.ssh
+
+USER imageserver
+RUN mkdir /home/imageserver/.ssh; chmod 700 /home/imageserver/.ssh
+
+USER root
 ADD init.sh /init.sh
