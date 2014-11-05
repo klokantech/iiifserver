@@ -57,7 +57,7 @@ unsigned int get_nprocs_conf(){
 
 using namespace std;
 
-// Kakadu 7.5 uses namespaces                                                                                                                                                        
+// Kakadu 7.5 uses namespaces
 #if KDU_MAJOR_VERSION > 7 || (KDU_MAJOR_VERSION == 7 && KDU_MINOR_VERSION >= 5)
 using namespace kdu_core;
 using namespace kdu_supp;
@@ -154,9 +154,9 @@ void KakaduImage::loadImageInfo( int seq, int ang ) throw(file_error)
   logfile << "Kakadu :: Resolution : " << w << "x" << h << endl;
 #endif
 
-  // Loop through each resolution and calculate the image dimensions - 
+  // Loop through each resolution and calculate the image dimensions -
   // We calculate ourselves rather than relying on get_dims() to force a similar
-  // behaviour to TIFF with resolutions at floor(x/2) rather than Kakadu's default ceil(x/2) 
+  // behaviour to TIFF with resolutions at floor(x/2) rather than Kakadu's default ceil(x/2)
   for( unsigned int c=1; c<numResolutions; c++ ){
     //    codestream.apply_input_restrictions(0,0,c,1,NULL,KDU_WANT_OUTPUT_COMPONENTS);
     //    kdu_dims layers;
@@ -506,11 +506,11 @@ void KakaduImage::process( unsigned int res, int layers, int xoffset, int yoffse
 
     // Create our buffers
     if( obpc == 16 ){
-      stripe_buffer = new kdu_uint16[tw*stripe_heights[0]*channels];
+      stripe_buffer = new kdu_uint16[tw*th*channels];
       buffer = new unsigned short[tw*th*channels];
     }
     else if( obpc == 8 ){
-      stripe_buffer = new kdu_byte[tw*stripe_heights[0]*channels];
+      stripe_buffer = new kdu_byte[tw*th*channels];
       buffer = new unsigned char[tw*th*channels];
     }
 
