@@ -129,8 +129,9 @@ void FIF::run( Session* session, const string& src ){
           delete (*session->image);
           *session->image = NULL;
         }
+        else
+          (*session->image)->closeImage();
       }
-      (*session->image)->closeImage();
     }
 #ifdef HAVE_KAKADU
     else if( format == JPEG2000 ){
