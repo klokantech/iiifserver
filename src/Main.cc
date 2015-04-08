@@ -280,6 +280,9 @@ int main( int argc, char *argv[] )
 #ifdef HAVE_KAKADU
     logfile << "Setting up JPEG2000 support via Kakadu SDK" << endl;
 #endif
+#ifdef HAVE_GDAL
+    logfile << "Setting up more raster files support via GDAL SDK" << endl;
+#endif
   }
 
 
@@ -340,9 +343,9 @@ int main( int argc, char *argv[] )
     // Try to open the module
 
     Tokenizer izer( modulePath, "," );
-  
+
     while( izer.hasMoreTokens() ){
-      
+
       try{
 	string token = izer.nextToken();
 	DSOImage module;
@@ -358,7 +361,7 @@ int main( int argc, char *argv[] )
       }
 
     }
-    
+
     // Tell us what's happened
     if( loglevel >= 1 ) logfile << moduleList.size() << " external modules loaded" << endl;
 
@@ -372,7 +375,7 @@ int main( int argc, char *argv[] )
     Set up a signal handler for USR1, TERM, HUP and INT signals
     - to simplify things, they can all just shutdown the
       server. We can rely on mod_fastcgi to restart us.
-    - SIGUSR1 and SIGHUP don't exist on Windows, though. 
+    - SIGUSR1 and SIGHUP don't exist on Windows, though.
   ***********************************************************/
 
 #ifndef WIN32
@@ -462,7 +465,7 @@ int main( int argc, char *argv[] )
       session.headers.empty();
 
       char* header = NULL;
- 
+
       // Get the query into a string
 #ifdef DEBUG
       header = argv[1];
@@ -740,7 +743,7 @@ int main( int argc, char *argv[] )
     if( loglevel >= 2 ){
       logfile << "image closed and deleted" << endl
 	      << "Server count is " << IIPcount << endl << endl;
-      
+
     }
 
 

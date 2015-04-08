@@ -28,6 +28,9 @@
 #ifdef HAVE_KAKADU
 #include "KakaduImage.h"
 #endif
+#ifdef HAVE_GDAL
+#include "GdalImage.h"
+#endif
 
 #define MAXIMAGECACHE 500  // Max number of items in image cache
 
@@ -86,20 +89,20 @@ void FIF::run( Session* session, const string& src ){
     else{
       // Cache Hit
       if( session->imageCache->find(argument) != session->imageCache->end() ){
-	test = (*session->imageCache)[ argument ];
-	if( session->loglevel >= 2 ){
-	  *(session->logfile) << "FIF :: Image cache hit. Number of elements: " << session->imageCache->size() << endl;
-	}
+        test = (*session->imageCache)[ argument ];
+        if( session->loglevel >= 2 ){
+          *(session->logfile) << "FIF :: Image cache hit. Number of elements: " << session->imageCache->size() << endl;
+        }
       }
       // Cache Miss
       else{
-	if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: Image cache miss" << endl;
-	test = IIPImage( argument );
-	test.setFileNamePattern( filename_pattern );
-	test.setFileSystemPrefix( filesystem_prefix );
-	test.Initialise();
-	// Delete items if our list of images is too long.
-	if( session->imageCache->size() >= MAXIMAGECACHE ) session->imageCache->erase( session->imageCache->begin() );
+        if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: Image cache miss" << endl;
+        test = IIPImage( argument );
+        test.setFileNamePattern( filename_pattern );
+        test.setFileSystemPrefix( filesystem_prefix );
+        test.Initialise();
+        // Delete items if our list of images is too long.
+        if( session->imageCache->size() >= MAXIMAGECACHE ) session->imageCache->erase( session->imageCache->begin() );
       }
     }
 
@@ -110,20 +113,49 @@ void FIF::run( Session* session, const string& src ){
     ***************************************************************/
 
     ImageFormat format = test.getImageFormat();
+    bool imgLoaded = false;
 
     if( format == TIF ){
       if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: TIFF image detected" << endl;
+      imgLoaded = true;
       *session->image = new TPTImage( test );
+      try {
+        (*session->image)->openImage();
+      }
+      catch(const file_error& error) {
+        if(strstr(error.what(), "not tiled") != NULL) {
+          imgLoaded = false;
+          delete (*session->image);
+          *session->image = NULL;
+        }
+      }
+      (*session->image)->closeImage();
     }
 #ifdef HAVE_KAKADU
     else if( format == JPEG2000 ){
       if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: JPEG2000 image detected" << endl;
+      imgLoaded = true;
       *session->image = new KakaduImage( test );
     }
 #endif
-    else throw string( "Unsupported image type: " + argument );
 
-    /* Disable module loading for now!
+#ifdef HAVE_GDAL
+    if( format == GDAL || !imgLoaded) {
+      if(GdalImage::IsFileSupported(test.getFileName(0, 90))) {
+        if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: GDAL image detected" << endl;
+        *session->image = new GdalImage( test );
+        imgLoaded = true;
+      }
+    }
+#endif
+
+    if (!imgLoaded) {
+      if( (*session->image) != NULL)
+        delete (*session->image);
+      throw string( "Unsupported image type: " + argument );
+    }
+
+/* Disable module loading for now!
     else{
 
 #ifdef ENABLE_DL
@@ -140,7 +172,7 @@ void FIF::run( Session* session, const string& src ){
 	  throw string( "Unsupported image type: " + imtype );
 	}
 	else{
-	  // Construct our dynamic loading image decoder 
+	  // Construct our dynamic loading image decoder
 	  session->image = new DSOImage( test );
 	  (*session->image)->Load( (*mod_it).second );
 

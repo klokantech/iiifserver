@@ -1,4 +1,4 @@
-// IIPImage.cc 
+// IIPImage.cc
 
 
 /*  IIP fcgi server module
@@ -25,6 +25,10 @@
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
+#endif
+
+#ifdef HAVE_GDAL
+#include "GdalImage.h"
 #endif
 
 #if _MSC_VER
@@ -123,6 +127,11 @@ void IIPImage::testImageType() throw(file_error)
 	     || memcmp( header, lbigtiff, 4 ) == 0 || memcmp( header, bbigtiff, 4 ) == 0 ){
       format = TIF;
     }
+#ifdef HAVE_GDAL
+    else if( GdalImage::IsFileSupported(path) ) {
+      format = GDAL;
+    }
+#endif
     else format = UNSUPPORTED;
 
   }
@@ -208,7 +217,7 @@ void IIPImage::measureVerticalAngles()
   unsigned int i;
 
   string filename = fileSystemPrefix + imagePath + fileNamePattern + "000_*." + suffix;
-  
+
   if( glob( filename.c_str(), 0, NULL, &gdat ) != 0 ){
     globfree( &gdat );
   }
@@ -273,6 +282,9 @@ void IIPImage::measureHorizontalAngles()
 
 void IIPImage::Initialise()
 {
+#ifdef HAVE_GDAL
+  GdalImage::InitialiseLibrary();
+#endif
   testImageType();
 
   if( !isFile ){

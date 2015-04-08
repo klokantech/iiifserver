@@ -47,7 +47,7 @@ class file_error : public std::runtime_error {
 
 
 // Supported image formats
-enum ImageFormat { TIF, JPEG2000, UNSUPPORTED };
+enum ImageFormat { TIF, JPEG2000, GDAL, UNSUPPORTED };
 
 
 
@@ -63,7 +63,7 @@ class IIPImage {
  private:
 
   /// Image path supplied
-  std::string imagePath; 
+  std::string imagePath;
 
   /// Prefix to add to paths
   std::string fileSystemPrefix;
