@@ -282,9 +282,6 @@ void IIPImage::measureHorizontalAngles()
 
 void IIPImage::Initialise()
 {
-#ifdef HAVE_GDAL
-  GdalImage::InitialiseLibrary();
-#endif
   testImageType();
 
   if( !isFile ){

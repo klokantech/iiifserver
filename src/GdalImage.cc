@@ -44,8 +44,10 @@ extern std::ofstream logfile;
  */
 int GdalImage::IsFileSupported(std::string path)
 {
-  if(!initialised)
-    return 0;
+  if(!initialised) {
+    GdalImage::InitialiseLibrary();
+    initialised = 1;
+  }
 
   GDALDataset * ds = (GDALDataset *) GDALOpen(path.c_str(), GA_ReadOnly);
 #ifdef DEBUG
