@@ -124,6 +124,7 @@ void FIF::run( Session* session, const string& src ){
       }
       catch(const file_error& error) {
         if(strstr(error.what(), "not tiled") != NULL) {
+          if( session->loglevel >= 4 ) *(session->logfile) << "FIF :: TIFF image is not tiled" << endl;
           imgLoaded = false;
           delete (*session->image);
           *session->image = NULL;
@@ -145,6 +146,10 @@ void FIF::run( Session* session, const string& src ){
         if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: GDAL image detected" << endl;
         *session->image = new GdalImage( test );
         imgLoaded = true;
+      }
+      else {
+        if( session->loglevel >= 4 )
+          *(session->logfile) << "FIF :: GDAL does not support file " << test.getFileName(0, 90) << endl;
       }
     }
 #endif

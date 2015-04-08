@@ -18,6 +18,10 @@
 
 #include "GdalImage.h"
 
+#ifdef DEBUG
+extern std::ofstream logfile;
+#endif
+
 #include <cstdio>
 #include <cstring>
 #include <cpl_conv.h>
@@ -229,7 +233,11 @@ int GdalImage::InitialiseLibrary()
 
   GDALAllRegister();
   OGRRegisterAll();
-//   CPLSetErrorHandler(CPLQuietErrorHandler);
+  CPLSetErrorHandler(CPLQuietErrorHandler);
+
+#ifdef DEBUG
+    logfile << "GDAL :: InitialiseLibrary() succeeded" << endl;
+#endif
 
   return 0;
 }
