@@ -119,19 +119,6 @@ void FIF::run( Session* session, const string& src ){
       if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: TIFF image detected" << endl;
       imgLoaded = true;
       *session->image = new TPTImage( test );
-      try {
-        (*session->image)->openImage();
-      }
-      catch(const file_error& error) {
-        if(strstr(error.what(), "not tiled") != NULL) {
-          if( session->loglevel >= 4 ) *(session->logfile) << "FIF :: TIFF image is not tiled" << endl;
-          imgLoaded = false;
-          delete (*session->image);
-          *session->image = NULL;
-        }
-        else
-          (*session->image)->closeImage();
-      }
     }
 #ifdef HAVE_KAKADU
     else if( format == JPEG2000 ){

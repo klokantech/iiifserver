@@ -27,6 +27,8 @@
 #include <glob.h>
 #endif
 
+#include "TPTImage.h"
+
 #ifdef HAVE_GDAL
 #include "GdalImage.h"
 #endif
@@ -122,11 +124,14 @@ void IIPImage::testImageType() throw(file_error)
 
     // Compare our header sequence to our magic byte signatures
     if( memcmp( header, j2k, 10 ) == 0 ) format = JPEG2000;
-    else if( memcmp( header, stdtiff, 3 ) == 0
-	     || memcmp( header, lsbtiff, 4 ) == 0 || memcmp( header, msbtiff, 4 ) == 0
-	     || memcmp( header, lbigtiff, 4 ) == 0 || memcmp( header, bbigtiff, 4 ) == 0 ){
+    else if( TPTImage::IsFileSupported(path) ) {
       format = TIF;
     }
+//     else if( memcmp( header, stdtiff, 3 ) == 0
+// 	     || memcmp( header, lsbtiff, 4 ) == 0 || memcmp( header, msbtiff, 4 ) == 0
+// 	     || memcmp( header, lbigtiff, 4 ) == 0 || memcmp( header, bbigtiff, 4 ) == 0 ){
+//       format = TIF;
+//     }
 #ifdef HAVE_GDAL
     else if( GdalImage::IsFileSupported(path) ) {
       format = GDAL;
