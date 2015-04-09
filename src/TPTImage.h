@@ -45,6 +45,13 @@ class TPTImage : public IIPImage {
 
  public:
 
+   /**
+    * Test if file is supported
+    * @param      std::string       Path to the file
+    */
+   static int IsFileSupported(std::string path);
+
+
   /// Constructor
   TPTImage():IIPImage(), tiff( NULL ), tile_buf( NULL ) {};
 
@@ -75,7 +82,7 @@ class TPTImage : public IIPImage {
   /** @param image IIPImage object
    */
   TPTImage( const IIPImage& image ): IIPImage( image ) {
-    tiff = NULL; tile_buf = NULL; 
+    tiff = NULL; tile_buf = NULL;
   };
 
   /// Destructor

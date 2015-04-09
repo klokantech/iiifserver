@@ -27,6 +27,28 @@
 
 using namespace std;
 
+/**
+ * Test if file is supported
+ * @param      std::string       Path to the file
+ */
+int TPTImage::IsFileSupported(std::string path)
+{
+  TIFF *tiff;
+
+  // Try to open and allocate a buffer
+  if( ( tiff = TIFFOpen( path.c_str(), "r" ) ) == NULL ) {
+    return 0;
+  }
+
+  // Get the tile and image sizes
+  TIFFGetField( tiff, TIFFTAG_TILEWIDTH, &tile_width );
+  TIFFGetField( tiff, TIFFTAG_TILELENGTH, &tile_height );
+
+  // Insist on a tiled image
+  return !((tile_width == 0) && (tile_height == 0));
+}
+// ~ int TPTImage::IsFileSupported(std::string path)
+
 
 void TPTImage::openImage() throw (file_error)
 {
@@ -223,11 +245,11 @@ RawTile TPTImage::getTile( int seq, int ang, unsigned int res, int layers, unsig
   }
 
 
-  // The first resolution is the highest, so we need to invert 
+  // The first resolution is the highest, so we need to invert
   //  the resolution - can avoid this if we store our images with
-  //  the smallest image first. 
+  //  the smallest image first.
   int vipsres = ( numResolutions - 1 ) - res;
-  
+
 
   // Change to the right directory for the resolution
   if( !TIFFSetDirectory( tiff, vipsres ) ) {
@@ -235,12 +257,12 @@ RawTile TPTImage::getTile( int seq, int ang, unsigned int res, int layers, unsig
   }
 
 
-  // Check that a valid tile number was given  
+  // Check that a valid tile number was given
   if( tile >= TIFFNumberOfTiles( tiff ) ) {
     ostringstream tile_no;
     tile_no << "Asked for non-existant tile: " << tile;
     throw file_error( tile_no.str() );
-  } 
+  }
 
 
   // Get the size of this tile, the current image,
