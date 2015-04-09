@@ -44,6 +44,9 @@ int TPTImage::IsFileSupported(std::string path)
   TIFFGetField( tiff, TIFFTAG_TILEWIDTH, &tile_width );
   TIFFGetField( tiff, TIFFTAG_TILELENGTH, &tile_height );
 
+  TIFFClose( tiff );
+  tiff = NULL;
+  
   // Insist on a tiled image
   return !((tile_width == 0) && (tile_height == 0));
 }
