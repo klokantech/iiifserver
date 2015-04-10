@@ -51,7 +51,7 @@ int GdalImage::IsFileSupported(std::string path)
 
   GDALDataset * ds = (GDALDataset *) GDALOpen(path.c_str(), GA_ReadOnly);
 #ifdef DEBUG
-    logfile << "GDAL :: IsFileSupported() " << path << ": "<< std::bool << ds != NULL << endl;
+    logfile << "GDAL :: IsFileSupported() " << path << ": "<< (ds != NULL) << endl;
 #endif
 
   if(ds == NULL)
