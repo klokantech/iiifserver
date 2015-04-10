@@ -28,7 +28,7 @@
 bool GdalImage::initialised = false;
 
 #include "Timer.h"
-//#define DEBUG 1
+#define DEBUG 1
 
 
 using namespace std;
@@ -255,7 +255,7 @@ void GdalImage::loadImageInfo( int seq, int ang ) throw(file_error)
       throw file_error("GDAL :: loadImageInfo() :: Unsupported raster band data type");
   }
 
-  numResolutions = 1;
+  numResolutions = 0;
 #ifdef DEBUG
     logfile << "GDAL :: Resolution : " << w << "x" << h << endl;
 #endif
@@ -325,8 +325,10 @@ void GdalImage::closeImage()
   timer.start();
 #endif
 
-  GDALClose(_ds);
-  _ds = NULL;
+  if(_ds != NULL) {
+    GDALClose(_ds);
+    _ds = NULL;
+  }
 
 #ifdef DEBUG
   logfile << "GDAL :: closeImage() :: " << timer.getTime() << " microseconds" << endl;
@@ -368,6 +370,7 @@ RawTile GdalImage::getTile( int seq, int ang, unsigned int res, int layers, unsi
   // Calculate the number of tiles in each direction
   unsigned int ntlx = (image_widths[vipsres] / tw) + (rem_x == 0 ? 0 : 1);
   unsigned int ntly = (image_heights[vipsres] / th) + (rem_y == 0 ? 0 : 1);
+
 
   if( tile >= ntlx*ntly ){
     ostringstream tile_no;
@@ -504,10 +507,9 @@ void GdalImage::process( unsigned int res, int layers, int xoffset, int yoffset,
 
   // Size for read RGBA data from File
 //   _band_size = _read_width * _read_height * sizeof(GByte);
-  GUIntBig pixelSpace = obpc/8;
+  GUIntBig pixelSpace = (obpc/8) * _ds->GetRasterCount();
   GUIntBig lineSpace = tw * pixelSpace;
-  GUIntBig bandSpace = lineSpace * th;
-  GUIntBig band_size = bandSpace;
+  GUIntBig bandSpace = (obpc/8);
 
 //   int timeStartInit = GetMilliCount();
 //   int partly = !had_alpha && _write_width == _read_width && _write_height == _read_height;
@@ -536,6 +538,15 @@ void GdalImage::process( unsigned int res, int layers, int xoffset, int yoffset,
     dt = GDT_UInt16;
   else
     dt = GDT_Byte;
+
+#ifdef DEBUG
+  logfile << "GDAL :: process: " << res << ", " << layers << ", "
+        << xoffset << ", " << yoffset << ", " << tw << ", " << th << endl;
+  logfile << "GDAL :: RasterIO " << rxoffset << ", " << ryoffset << ", "
+        << rtw << ", " << rth << ", " << tw << ", " << th << ", "
+        << _ds->GetRasterCount()
+        << "\n     " << pixelSpace << ", " << lineSpace << ", " << bandSpace << endl;
+#endif
 
 //   int timeStart = GetMilliCount();
 //   DEBUG2(TID_STR" RasterIO(%d, %d, %d, %d, buff, %d, %d, bands %d)\n",

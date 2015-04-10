@@ -145,6 +145,9 @@ void FIF::run( Session* session, const string& src ){
     if (!imgLoaded) {
       if( (*session->image) != NULL)
         delete (*session->image);
+      if( session->loglevel >= 2 )
+        *(session->logfile) << "FIF :: Unsupported image type " << argument
+            << test.getFileName(0, 90) << "; format: " << format << endl;
       throw string( "Unsupported image type: " + argument );
     }
 
