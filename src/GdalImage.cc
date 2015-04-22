@@ -122,8 +122,10 @@ bool GdalImage::needOverviews()
   const char *compr = _ds->GetMetadataItem("COMPRESSION", "IMAGE_STRUCTURE");
   const char *ftype = GDALGetDriverShortName(_ds->GetDriver());
 #ifdef DEBUG
-  logfile << " GDAL :: needOverviews() :: compression metadate: " << compr << endl;
-  logfile << " GDAL :: needOverviews() :: ftype: " << ftype << endl;
+  logfile << " GDAL :: needOverviews() :: compression metadata: "
+      << ((compr == NULL) ? "NULL" : compr) << endl;
+  logfile << " GDAL :: needOverviews() :: ftype: "
+      << ((ftype == NULL) ? "NULL" : ftype) << endl;
 #endif
 
   // Some formats depends on compression method
@@ -255,7 +257,7 @@ void GdalImage::loadImageInfo( int seq, int ang ) throw(file_error)
       throw file_error("GDAL :: loadImageInfo() :: Unsupported raster band data type");
   }
 
-  numResolutions = 0;
+  numResolutions = 1;
 #ifdef DEBUG
     logfile << "GDAL :: Resolution : " << w << "x" << h << endl;
 #endif
@@ -371,6 +373,10 @@ RawTile GdalImage::getTile( int seq, int ang, unsigned int res, int layers, unsi
   unsigned int ntlx = (image_widths[vipsres] / tw) + (rem_x == 0 ? 0 : 1);
   unsigned int ntly = (image_heights[vipsres] / th) + (rem_y == 0 ? 0 : 1);
 
+#ifdef DEBUG
+  logfile << "GDAL :: getTile( " << seq<<", "<< ang<<", "<< res<<", "<<layers<<", "<<tile<<""<<endl;
+  logfile << "     :: - " << rem_x<<", "<<rem_y<<", "<<ntlx<<", "<<ntly<<endl;
+#endif
 
   if( tile >= ntlx*ntly ){
     ostringstream tile_no;
@@ -395,6 +401,7 @@ RawTile GdalImage::getTile( int seq, int ang, unsigned int res, int layers, unsi
 
 #ifdef DEBUG
   logfile << "GDAL :: Tile size: " << tw << "x" << th << "@" << channels << endl;
+  logfile << "GDAL :: Tile region: " << xoffset << "x" << yoffset << endl;
 #endif
 
 
@@ -407,7 +414,7 @@ RawTile GdalImage::getTile( int seq, int ang, unsigned int res, int layers, unsi
   else if( obpc == 8 ) rawtile.data = new unsigned char[tw*th*channels];
   else throw file_error( "GDAL :: Unsupported number of bits" );
 
-  rawtile.dataLength = tw*th*channels*obpc/8;
+  rawtile.dataLength = tw*th*channels*(obpc/8);
   rawtile.filename = getImagePath();
   rawtile.timestamp = timestamp;
 
@@ -485,10 +492,10 @@ void GdalImage::process( unsigned int res, int layers, int xoffset, int yoffset,
   }*/
 
   // Get read area for requested resolution
-  unsigned int rtw = tw << (numResolutions - res);
-  unsigned int rth = th << (numResolutions - res);
-  int rxoffset = xoffset << (numResolutions - res);
-  int ryoffset = yoffset << (numResolutions - res);
+  unsigned int rtw = tw << (numResolutions - res - 1);
+  unsigned int rth = th << (numResolutions - res - 1);
+  int rxoffset = xoffset << (numResolutions - res - 1);
+  int ryoffset = yoffset << (numResolutions - res - 1);
 
 //   int vipsres = ( numResolutions - 1 ) - res;
 //
