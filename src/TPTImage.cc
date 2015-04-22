@@ -40,8 +40,8 @@ int TPTImage::IsFileSupported(std::string path)
     return 0;
   }
 
-  unsigned int tile_width, tile_height;
-  
+  unsigned int tile_width = 0, tile_height = 0;
+
   // Get the tile and image sizes
   TIFFGetField( tiff, TIFFTAG_TILEWIDTH, &tile_width );
   TIFFGetField( tiff, TIFFTAG_TILELENGTH, &tile_height );
