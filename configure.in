@@ -236,6 +236,9 @@ AC_CHECK_LIB(c,get_nprocs_conf,AC_DEFINE(NPROCS))
 #************************************************************
 #     Check for GDAL support
 #************************************************************
+#  Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+#  Author: Martin Mikita <martin.mikita@klokantech.com>
+
 AC_ARG_WITH( gdal,
    [  --with-gdal=DIR          location of the gdal headers files],
    gdal_path=$withval)

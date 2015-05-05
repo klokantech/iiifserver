@@ -1,19 +1,26 @@
-/****************************************************************************
- **
- ** This file is part of the project QtGDAL
- **
- ** Author: Martin Mikita <martin@mikita.eu>
- **
- ** School:   FIT VUT Brno [2009-2015]
- ** Copyright (c) 2014 Martin Mikita & Klokan Technologies GmbH.
- **           All rights reserved.
- **
- ****************************************************************************/
+// GDAL Image class Interface
+
+/*  IIP GDAL
+
+    Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+    Author: Martin Mikita <martin.mikita@klokantech.com>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software Foundation,
+    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
+*/
 /**
- * File struct with methods
- *
- *  - Opening file with GDAL
- *  - Reading tile
+ * Initialization of GDAL Library on different platforms
  */
 
 #include "GdalImage.h"

@@ -129,6 +129,8 @@ void FIF::run( Session* session, const string& src ){
 #endif
 
 #ifdef HAVE_GDAL
+    // Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+    // Author: Martin Mikita <martin.mikita@klokantech.com>
     if( format == GDAL || !imgLoaded) {
       if(GdalImage::IsFileSupported(test.getFileName(0, 90))) {
         if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: GDAL image detected" << endl;

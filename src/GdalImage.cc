@@ -1,9 +1,7 @@
 /*  IIP Server: GDAL handler
 
-
-
-    Copyright (C) 2009-2015 IIPImage.
-    Author: Ruven Pillay
+    Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+    Author: Martin Mikita <martin.mikita@klokantech.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

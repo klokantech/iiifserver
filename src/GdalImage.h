@@ -1,16 +1,9 @@
-// Kakadu JPEG2000 Image class Interface
+// GDAL Image class Interface
 
-/*  IIP Kakadu JPEG2000 Class
+/*  IIP GDAL
 
-
-    Development supported by Moravian Library in Brno (Moravska zemska
-    knihovna v Brne, http://www.mzk.cz/) R&D grant MK00009494301 & Old
-    Maps Online (http://www.oldmapsonline.org/) from the Ministry of
-    Culture of the Czech Republic.
-
-
-    Copyright (C) 2009-2014 IIPImage.
-    Author: Ruven Pillay
+    Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+    Author: Martin Mikita <martin.mikita@klokantech.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

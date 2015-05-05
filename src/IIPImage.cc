@@ -133,6 +133,8 @@ void IIPImage::testImageType() throw(file_error)
 //       format = TIF;
 //     }
 #ifdef HAVE_GDAL
+    // Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+    // Author: Martin Mikita <martin.mikita@klokantech.com>
     else if( GdalImage::IsFileSupported(path) ) {
       format = GDAL;
     }
