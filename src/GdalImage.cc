@@ -255,7 +255,7 @@ void GdalImage::loadImageInfo( int seq, int ang ) throw(file_error)
       throw file_error("GDAL :: loadImageInfo() :: Unsupported raster band data type");
   }
 
-  numResolutions = 1;
+  numResolutions = 0;
 #ifdef DEBUG
     logfile << "GDAL :: Resolution : " << w << "x" << h << endl;
 #endif
@@ -472,71 +472,18 @@ void GdalImage::process( unsigned int res, int layers, int xoffset, int yoffset,
   unsigned int obpc = bpc;
   if( bpc <= 16 && bpc > 8 ) obpc = 16;
   else if( bpc <= 8 ) obpc = 8;
-/*
-  /// Detect req area outside image area
-  // width of tile outside raster width
-  if( (rxoffset + rtw) > _ds->GetRasterXSize() )
-  {
-    int tx = tw;
-    tw = _img->getWidth() - _x_offset;
-    rtw = tw
-  }
-  // height of tile outside raster width
-  if( (_y_offset + _y_size) > _img->getHeight() )
-  {
-    int ty = _y_size;
-    _y_size = _img->getHeight() - _y_offset;
-    _read_height = ceil(((float)_tile_height* _y_size) / ty);
-  }*/
 
   // Get read area for requested resolution
-  unsigned int rtw = tw << (numResolutions - res - 1);
-  unsigned int rth = th << (numResolutions - res - 1);
-  int rxoffset = xoffset << (numResolutions - res - 1);
-  int ryoffset = yoffset << (numResolutions - res - 1);
-
-//   int vipsres = ( numResolutions - 1 ) - res;
-//
-//   // Handle virtual resolutions
-//   if( res < virtual_levels ){
-//     unsigned int factor = 1 << (virtual_levels-res);
-//     xoffset *= factor;
-//     yoffset *= factor;
-//     tw *= factor;
-//     th *= factor;
-//     vipsres = numResolutions - 1 - virtual_levels;
-// #ifdef DEBUG
-//   logfile << "GDAL :: using smallest existing resolution " << virtual_levels << endl;
-// #endif
-//   }
+  unsigned int rtw = tw << (numResolutions - res);
+  unsigned int rth = th << (numResolutions - res);
+  int rxoffset = xoffset << (numResolutions - res);
+  int ryoffset = yoffset << (numResolutions - res);
 
   // Size for read RGBA data from File
 //   _band_size = _read_width * _read_height * sizeof(GByte);
   GUIntBig pixelSpace = (obpc/8) * _ds->GetRasterCount();
   GUIntBig lineSpace = tw * pixelSpace;
   GUIntBig bandSpace = (obpc/8);
-
-//   int timeStartInit = GetMilliCount();
-//   int partly = !had_alpha && _write_width == _read_width && _write_height == _read_height;
-//   DEBUG2(TID_STR" is partly %d \n", TID_ARG, partly);
-//   // Prepare and initialize output buffer
-//   for(int i=0; i<_band_count; ++i) {
-//     // rgba[0] was malloced above
-//     if(i > 0)
-//       _readBuff[i] = _readBuff[i-1] + _band_size;
-//     for(GUIntBig j=0; j<_band_size; ++j) {
-//       // initialize array - white for every band, or 00 for alpha (transparency)
-//       _readBuff[i][j] = (i == (_alpha_band-1) && had_alpha) ? 0x00 : 0xFF;
-//       // Set full transparency outside read image (if not had alpha)
-//       if(partly) {
-//         int r = j % _tile_width;
-//         int c = j / _tile_width;
-//         if(r >= _read_width || c >= _read_height)
-//           _readBuff[i][j] = (_alpha_band-1 == i) ? 0x00 : 0xFF;
-//       }
-//     }
-//   }
-//   DEBUG3(TID_STR" RGBA init took %d ms\n",TID_ARG, GetMilliSpan( timeStartInit ));
 
   GDALDataType dt;
   if(obpc == 16)
@@ -553,36 +500,18 @@ void GdalImage::process( unsigned int res, int layers, int xoffset, int yoffset,
         << "\n     " << pixelSpace << ", " << lineSpace << ", " << bandSpace << endl;
 #endif
 
-//   int timeStart = GetMilliCount();
-//   DEBUG2(TID_STR" RasterIO(%d, %d, %d, %d, buff, %d, %d, bands %d)\n",
-//          TID_ARG, _x_offset, _y_offset, _x_size, _y_size,
-//           _read_width, _read_height, _img->getDatasetP()->GetRasterCount());
+  // Read part of image into buffer void* d
   CPLErr rc = _ds->RasterIO(GF_Read,
       rxoffset, ryoffset, rtw, rth,
       d, tw, th, dt,
       _ds->GetRasterCount(), NULL,
       pixelSpace, lineSpace, bandSpace);
-//   DEBUG3(TID_STR" ReadRaster took %d ms [%d]\n",TID_ARG, GetMilliSpan( timeStart ), rc);
 
   // We cannot continue, free memory
   if(rc != CE_None)
   {
-//     DEBUG2("QGTile::readTile RasterIO failed "TID_STR"!\n", TID_ARG);
-//     DEBUG2(" - error %s \n", CPLGetLastErrorMsg());
-//     ErrorSet("QGTile::readTile: RasterIO failed "TID_STR"!", TID_ARG);
     throw file_error("GDAL :: process() :: Requested region failed to read raster");
   }
-
-#ifdef DEBUG
-//     logfile << "GDAL :: decompressor starting" << endl;
-//
-//     logfile << "GDAL :: requested region on high resolution canvas: position: "
-// 	    << image_dims.pos.x << "x" << image_dims.pos.y
-// 	    << ". size: " << image_dims.size.x << "x" << image_dims.size.y << endl;
-//
-//     logfile << "GDAL :: mapped resolution region size: " << comp_dims.size.x << "x" << comp_dims.size.y << endl;
-//     logfile << "GDAL :: About to pull stripes" << endl;
-#endif
 
 
 #ifdef DEBUG
