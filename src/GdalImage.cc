@@ -148,6 +148,14 @@ bool GdalImage::needOverviews()
   else if(strcmp(ftype, "JPEG") == 0) {
     // JPEG could have overviews, but large JPEGs are too slow
     // Dynamic overviews will handle this properly.
+    int ovc = band->GetOverviewCount();
+    if(ovc) {
+      int nBlockXSize, nBlockYSize;
+      GDALRasterBand *overview = band->GetOverview(0);
+      overview->GetBlockSize(&nBlockXSize, &nBlockYSize);
+      if(nBlockXSize == nBlockYSize)
+        return false;
+    }
     return (MPx > 200);
   }
   // BSB/KAP format is very fast without overviews
