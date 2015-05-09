@@ -63,10 +63,16 @@ class IIPImage {
  private:
 
   /// Image path supplied
-  std::string imagePath; 
+  std::string imagePath;
 
   /// Prefix to add to paths
   std::string fileSystemPrefix;
+
+  ///
+  /// Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+  /// Author: Martin Mikita <martin.mikita@klokantech.com>
+  /// Extension to append after filename
+  std::string fileNameExtension;
 
   /// Pattern for sequences
   std::string fileNamePattern;
@@ -179,6 +185,7 @@ class IIPImage {
   IIPImage( const IIPImage& image )
    : imagePath( image.imagePath ),
     fileSystemPrefix( image.fileSystemPrefix ),
+    fileNameExtension( image.fileNameExtension),
     fileNamePattern( image.fileNamePattern ),
     isFile( image.isFile ),
     suffix( image.suffix ),
@@ -248,6 +255,9 @@ class IIPImage {
 
   /// Set a file system prefix for added security
   void setFileSystemPrefix( const std::string& prefix ) { fileSystemPrefix = prefix; };
+
+  /// Set a file system prefix for added security
+  void setFileNameExtension( const std::string& extension ) { fileNameExtension= extension; };
 
   /// Set the file name pattern used in image sequences
   void setFileNamePattern( const std::string& pattern ) { fileNamePattern = pattern; };

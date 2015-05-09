@@ -1,4 +1,4 @@
-// IIPImage.cc 
+// IIPImage.cc
 
 
 /*  IIP fcgi server module
@@ -53,6 +53,7 @@ void IIPImage::swap( IIPImage& first, IIPImage& second ) // nothrow
   std::swap( first.format, second.format );
   std::swap( first.fileSystemPrefix, second.fileSystemPrefix );
   std::swap( first.fileNamePattern, second.fileNamePattern );
+  std::swap( first.fileNameExtension, second.fileNameExtension );
   std::swap( first.horizontalAnglesList, second.horizontalAnglesList );
   std::swap( first.verticalAnglesList, second.verticalAnglesList );
   std::swap( first.image_widths, second.image_widths );
@@ -81,7 +82,7 @@ void IIPImage::testImageType() throw(file_error)
   // Check whether it is a regular file
   struct stat sb;
 
-  string path = fileSystemPrefix + imagePath;
+  string path = fileSystemPrefix + imagePath + fileNameExtension;
 
   if( (stat(path.c_str(),&sb)==0) && S_ISREG(sb.st_mode) ){
 
@@ -132,7 +133,7 @@ void IIPImage::testImageType() throw(file_error)
 
     // Check for sequence
     glob_t gdat;
-    string filename = path + fileNamePattern + "000_090.*";
+    string filename = path + fileNamePattern + "000_090.*" + fileNameExtension;
 
     if( glob( filename.c_str(), 0, NULL, &gdat ) != 0 ){
       globfree( &gdat );
@@ -208,7 +209,7 @@ void IIPImage::measureVerticalAngles()
   unsigned int i;
 
   string filename = fileSystemPrefix + imagePath + fileNamePattern + "000_*." + suffix;
-  
+
   if( glob( filename.c_str(), 0, NULL, &gdat ) != 0 ){
     globfree( &gdat );
   }
@@ -297,7 +298,7 @@ const string IIPImage::getFileName( int seq, int ang )
   char name[1024];
 
   if( isFile ){
-    return fileSystemPrefix+imagePath;
+    return fileSystemPrefix+imagePath+fileNameExtension;
   }
   else{
     // The angle or spectral band indices should be a minimum of 3 digits when padded

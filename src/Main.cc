@@ -249,6 +249,12 @@ int main( int argc, char *argv[] )
   string filesystem_prefix = Environment::getFileSystemPrefix();
 
 
+  /// Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+  /// Author: Martin Mikita <martin.mikita@klokantech.com>
+  // Get the filename extension if any
+  string filename_extension = Environment::getFileNameExtension();
+
+
   // Set up our watermark object
   Watermark watermark( Environment::getWatermark(),
 		       Environment::getWatermarkOpacity(),
@@ -267,6 +273,7 @@ int main( int argc, char *argv[] )
   if( loglevel >= 1 ){
     logfile << "Setting maximum image cache size to " << max_image_cache_size << "MB" << endl;
     logfile << "Setting filesystem prefix to '" << filesystem_prefix << "'" << endl;
+    logfile << "Setting filename extension to '" << filename_extension << "'" << endl;
     logfile << "Setting default JPEG quality to " << jpeg_quality << endl;
     logfile << "Setting maximum CVT size to " << max_CVT << endl;
     logfile << "Setting 3D file sequence name pattern to '" << filename_pattern << "'" << endl;
@@ -340,9 +347,9 @@ int main( int argc, char *argv[] )
     // Try to open the module
 
     Tokenizer izer( modulePath, "," );
-  
+
     while( izer.hasMoreTokens() ){
-      
+
       try{
 	string token = izer.nextToken();
 	DSOImage module;
@@ -358,7 +365,7 @@ int main( int argc, char *argv[] )
       }
 
     }
-    
+
     // Tell us what's happened
     if( loglevel >= 1 ) logfile << moduleList.size() << " external modules loaded" << endl;
 
@@ -372,7 +379,7 @@ int main( int argc, char *argv[] )
     Set up a signal handler for USR1, TERM, HUP and INT signals
     - to simplify things, they can all just shutdown the
       server. We can rely on mod_fastcgi to restart us.
-    - SIGUSR1 and SIGHUP don't exist on Windows, though. 
+    - SIGUSR1 and SIGHUP don't exist on Windows, though.
   ***********************************************************/
 
 #ifndef WIN32
@@ -462,7 +469,7 @@ int main( int argc, char *argv[] )
       session.headers.empty();
 
       char* header = NULL;
- 
+
       // Get the query into a string
 #ifdef DEBUG
       header = argv[1];
@@ -740,7 +747,7 @@ int main( int argc, char *argv[] )
     if( loglevel >= 2 ){
       logfile << "image closed and deleted" << endl
 	      << "Server count is " << IIPcount << endl << endl;
-      
+
     }
 
 

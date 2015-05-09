@@ -68,6 +68,11 @@ void FIF::run( Session* session, const string& src ){
   // Get our image pattern variable
   string filesystem_prefix = Environment::getFileSystemPrefix();
 
+  /// Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+  /// Author: Martin Mikita <martin.mikita@klokantech.com>
+  // Get our image extension variable
+  string filename_extension = Environment::getFileNameExtension();
+
   // Get our image pattern variable
   string filename_pattern = Environment::getFileNamePattern();
 
@@ -80,6 +85,7 @@ void FIF::run( Session* session, const string& src ){
       test = IIPImage( argument );
       test.setFileNamePattern( filename_pattern );
       test.setFileSystemPrefix( filesystem_prefix );
+      test.setFileNameExtension( filename_extension );
       test.Initialise();
     }
     // If not, look up our object
@@ -97,6 +103,7 @@ void FIF::run( Session* session, const string& src ){
 	test = IIPImage( argument );
 	test.setFileNamePattern( filename_pattern );
 	test.setFileSystemPrefix( filesystem_prefix );
+	test.setFileNameExtension( filename_extension );
 	test.Initialise();
 	// Delete items if our list of images is too long.
 	if( session->imageCache->size() >= MAXIMAGECACHE ) session->imageCache->erase( session->imageCache->begin() );
@@ -140,7 +147,7 @@ void FIF::run( Session* session, const string& src ){
 	  throw string( "Unsupported image type: " + imtype );
 	}
 	else{
-	  // Construct our dynamic loading image decoder 
+	  // Construct our dynamic loading image decoder
 	  session->image = new DSOImage( test );
 	  (*session->image)->Load( (*mod_it).second );
 
