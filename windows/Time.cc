@@ -149,6 +149,12 @@ static const char *ampm[] = {
   NULL
 };
 
+static const char *gmtutc[] = {
+  "GMT",
+  "UTC",
+  NULL
+};
+
 /*
  * Try to match `*buf' to one of the strings in `strs'.  Return the
  * index of the matching string (or -1 if none).  Also advance buf.
@@ -305,7 +311,8 @@ strptime (const char *buf, const char *fmt, struct tm *timeptr)
 	buf = s;
 	break;
       case 'c' :
-	abort ();
+        throw "Character %%c not supported in strptime on Windows [windows/Time.cc]";
+	// abort ();
       case 'D' :		/* %m/%d/%y */
 	s = strptime (buf, "%m/%d/%y", timeptr);
 	if (s == NULL)
@@ -467,7 +474,14 @@ strptime (const char *buf, const char *fmt, struct tm *timeptr)
 	buf = s;
 	break;
       case 'Z' :
-	abort ();
+        // We are using tzset in src/Main.cc
+        // There should be always GMT
+        if(match_string(&buf, gmtutc) < 0) {
+          throw "Unexpected TimeZone for character %%Z - should be GMT or UTC [windows/Time.cc]";
+        }
+        tm->tm_isdst = 0;
+        break;
+	// abort ();
       case '\0' :
 	--fmt;
 	/* FALLTHROUGH */
