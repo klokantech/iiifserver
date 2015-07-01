@@ -479,7 +479,7 @@ strptime (const char *buf, const char *fmt, struct tm *timeptr)
         if(match_string(&buf, gmtutc) < 0) {
           throw "Unexpected TimeZone for character %%Z - should be GMT or UTC [windows/Time.cc]";
         }
-        tm->tm_isdst = 0;
+        timeptr->tm_isdst = 0;
         break;
 	// abort ();
       case '\0' :
