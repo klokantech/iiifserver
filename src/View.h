@@ -90,7 +90,7 @@ class View{
     resolution = 0; max_resolutions = 0;
     width = 0; height = 0;
     res_width = 0; res_height = 0;
-    min_size = 8; max_size = 0;
+    min_size = 1; max_size = 0;
     requested_width = 0; requested_height = 0;
     contrast = 1.0; gamma = 1.0;
     xangle = 0; yangle = 90;
