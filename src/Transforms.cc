@@ -19,8 +19,11 @@
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 
-
+#define _USE_MATH_DEFINES
 #include <cmath>
+#ifndef M_PI
+#define M_PI   3.141592653
+#endif
 #include "Transforms.h"
 
 
