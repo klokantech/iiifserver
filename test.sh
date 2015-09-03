@@ -8,6 +8,9 @@ sudo make install
 sudo mkdir /data && sudo wget --no-verbose --output-document=/data/demo.jp2 http://help.oldmapsonline.org/jpeg2000/demo.jp2?attredirects=0
 
 #nginx configuration
+sudo apt-get update -qq
+sudo apt-get install -y nginx
+
 sudo service nginx stop
 
 NGINX_CONF="/etc/nginx/sites-enabled/default"
@@ -46,7 +49,11 @@ sudo service memcached start
 src/iipsrv.fcgi --bind localhost:9000 &
 
 #output test
-if  [ "200" -ne $(curl -s -o /dev/null -I -w "%{http_code}" http://localhost/demo/info.json) ]; then
-    printf '%s\n' 'Image check was unsuccessful!' >&2
-    exit 1
+if  [ "200" -eq $(curl -s -o /dev/null -I -w "%{http_code}" http://localhost/demo/info.json) ]; then
+    printf '%s\n' 'Image check was successful!' >&2
+    exit 0
 fi
+
+printf '%s\n' 'Image check was unsuccessful!' >&2
+exit 1
+
