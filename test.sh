@@ -49,7 +49,7 @@ sudo service memcached start
 src/iipsrv.fcgi --bind localhost:9000 &
 
 #output test
-if  [ "200" -eq $(curl -s -o /dev/null -I -w "%{http_code}" http://localhost/demo/info.json) ]; then
+if  [ "200" -eq $(curl -s -o /dev/null -I -w "%{http_code}" http://127.0.0.1/demo/info.json) ]; then
     printf '%s\n' 'Image check was successful!' >&2
     exit 0
 fi

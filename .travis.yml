@@ -7,6 +7,4 @@ compiler:
 script:
   - ./autogen.sh
   - ./configure && make
-
-after_success:
   - ./test.sh
