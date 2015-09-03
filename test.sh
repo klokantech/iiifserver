@@ -23,7 +23,7 @@ server {
   location ~iiifserver.fcgi$ {
 
     include fastcgi_params;
-    fastcgi_pass localhost:9000;
+    fastcgi_pass 127.0.0.1:9000;
     add_header 'Access-Control-Allow-Origin' "*";
   }
 
@@ -46,7 +46,7 @@ export MEMCACHED_TIMEOUT=0
 #services start
 sudo service nginx start
 sudo service memcached start
-src/iipsrv.fcgi --bind localhost:9000 &
+src/iipsrv.fcgi --bind 127.0.0.1:9000 &
 
 #output test
 if  [ "200" -eq $(curl -s -o /dev/null -I -w "%{http_code}" http://127.0.0.1/demo/info.json) ]; then
