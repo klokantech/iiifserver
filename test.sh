@@ -5,12 +5,15 @@ set -ex
 sudo make install
 
 #prepare demo image file
-sudo mkdir /data && sudo wget --no-verbose --output-document=/data/demo.jp2 http://help.oldmapsonline.org/jpeg2000/demo.jp2?attredirects=0
+sudo mkdir /data && sudo wget --no-verbose --output-document=/data/67352ccc-d1b0-11e1-89ae-279075081939.png http://iiif.io/api/image/validator/67352ccc-d1b0-11e1-89ae-279075081939.png
+sudo convert /data/67352ccc-d1b0-11e1-89ae-279075081939.png -define tiff:tile-geometry=256x256  'ptif:/data/67352ccc-d1b0-11e1-89ae-279075081939.tif'
+
+#installation of necessary packages
+sudo apt-get update -qq
+sudo apt-get install -y nginx libmagic-dev
+sudo pip install Pillow iiif_validator
 
 #nginx configuration
-sudo apt-get update -qq
-sudo apt-get install -y nginx
-
 sudo service nginx stop
 
 NGINX_CONF="/etc/nginx/sites-enabled/default"
@@ -30,10 +33,10 @@ server {
   # Beautiful URLs:
 
   # /{identifier}/info.json
-  rewrite ^/(.+)/info.json$ /iiifserver.fcgi?iiif=\$1.jp2/info.json break;
+  rewrite ^/(.+)/info.json$ /iiifserver.fcgi?iiif=\$1.tif/info.json break;
 
   # /{identifier}/{region}/{size}/{rotation}/{quality}.{format}
-  rewrite ^/(.+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)$ /iiifserver.fcgi?iiif=\$1.jp2/\$2/\$3/\$4/\$5 break;
+  rewrite ^/(.+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)$ /iiifserver.fcgi?iiif=\$1.tif/\$2/\$3/\$4/\$5 break;
 
 }
 " | sudo tee $NGINX_CONF > /dev/null
@@ -48,12 +51,5 @@ sudo service nginx start
 sudo service memcached start
 src/iipsrv.fcgi --bind 127.0.0.1:9000 &
 
-#output test
-if  [ "200" -eq $(curl -s -o /dev/null -I -w "%{http_code}" http://127.0.0.1/demo/info.json) ]; then
-    printf '%s\n' 'Image check was successful!' >&2
-    exit 0
-fi
-
-printf '%s\n' 'Image check was unsuccessful!' >&2
-exit 1
-
+#validation
+iiif-validate.py -s 127.0.0.1:80 -i 67352ccc-d1b0-11e1-89ae-279075081939 --version=2.0 -v  --test quality_color --test id_error_escapedslash --test rot_region_basic --test jsonld --test region_error_random --test id_error_unescaped --test region_percent --test size_region --test size_error_random --test size_ch --test size_wc --test quality_grey --test id_squares --test region_pixels --test id_escaped --test format_error_random --test info_json --test size_percent --test cors --test id_error_random --test quality_error_random --test size_bwh --test format_jpg --test size_wh --test id_basic --test rot_error_random
