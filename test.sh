@@ -52,4 +52,10 @@ sudo service memcached start
 src/iipsrv.fcgi --bind 127.0.0.1:9000 &
 
 #validation
-iiif-validate.py -s 127.0.0.1:80 -i 67352ccc-d1b0-11e1-89ae-279075081939 --version=2.0 -v  --test quality_color --test id_error_escapedslash --test rot_region_basic --test jsonld --test region_error_random --test id_error_unescaped --test region_percent --test size_region --test size_error_random --test size_ch --test size_wc --test quality_grey --test id_squares --test region_pixels --test id_escaped --test format_error_random --test info_json --test size_percent --test cors --test id_error_random --test quality_error_random --test size_bwh --test format_jpg --test size_wh --test id_basic --test rot_error_random
+if iiif-validate.py -s 127.0.0.1:80 -i 67352ccc-d1b0-11e1-89ae-279075081939 --version=2.0 -v  --test quality_color --test id_error_escapedslash --test rot_region_basic --test jsonld --test region_error_random --test id_error_unescaped --test region_percent --test size_region --test size_error_random --test size_ch --test size_wc --test quality_grey --test id_squares --test region_pixels --test id_escaped --test format_error_random --test info_json --test size_percent --test cors --test id_error_random --test quality_error_random --test size_bwh --test format_jpg --test size_wh --test id_basic --test rot_error_random; then
+    printf '%s\n' 'Image check was successful!' >&2
+    exit 0
+fi
+
+printf '%s\n' 'Image check was unsuccessful!' >&2
+exit 1
