@@ -27,6 +27,8 @@
 #include "Tokenizer.h"
 #include "Transforms.h"
 #include "URL.h"
+#include "Environment.h"
+#include <sys/stat.h>
 
 #if _MSC_VER
 #include "../windows/Time.h"
@@ -60,6 +62,9 @@ void IIIF::run( Session* session, const string& src ){
   // Various string variables
   string suffix, filename, params;
 
+  // Get our default HTML viewer
+  string html_viewer = Environment::getViewer();
+  bool use_viewer = false;
 
   // First filter and decode our URL
   URL url( src );
@@ -75,7 +80,21 @@ void IIIF::run( Session* session, const string& src ){
 
   // Check if there is slash in argument and if it is not last / first character, extract identifier and suffix
   size_t lastSlashPos = argument.find_last_of("/");
-  if( lastSlashPos < argument.length() && lastSlashPos > 0 ){
+  /// Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+  /// Author: Martin Mikita <martin.mikita@klokantech.com>
+  // Only 3 types of extension are allowed: .jpg (for Image Request URI as format), .json (for Image Information Request URI)
+  // and another extensions (or missing) is full identifier (we are using HTML viewer from parameter)
+  size_t lastDot = argument.find_last_of(".");
+  string extension;
+  if( lastDot != string::npos ) {
+    extension = argument.substr(lastDot + 1, string::npos);
+  }
+  // If we have HTML viewer, and extension is not JSON, nor JPG
+  if( !html_viewer.empty() && (extension.empty() || (extension != "json" && extension != "jpg")) ) {
+    filename = argument;
+    use_viewer = true;
+  }
+  else if( lastSlashPos < argument.length() && lastSlashPos > 0 ){
 
     suffix = argument.substr( lastSlashPos+1, string::npos );
 
@@ -129,6 +148,75 @@ void IIIF::run( Session* session, const string& src ){
 
   // Reload our filename
   filename = (*session->image)->getImagePath();
+
+  /// Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+  /// Author: Martin Mikita <martin.mikita@klokantech.com>
+  // We are using viewer only if file exists
+  if(use_viewer) {
+    // Get the filesystem prefix if any
+    string filesystem_prefix = Environment::getFileSystemPrefix();
+    string viewerpath = filesystem_prefix + html_viewer;
+
+    // Check existence of viewer
+    ifstream iViewer(viewerpath, ifstream::binary);
+    if(!iViewer) {
+      throw file_error( "IIIF :: Unable to open viewer '"+viewerpath+"'");
+    }
+    int length;
+    // Get length of file
+    iViewer.seekg(0, iViewer.end);
+    length = iViewer.tellg();
+    iViewer.seekg(0, iViewer.beg);
+
+    // Allocate memory
+    char * buffer = new char [length];
+    // Read data as a block;
+    iViewer.read(buffer, length);
+
+    if (!iViewer) {
+      delete [] buffer;
+      throw file_error( "IIIF :: Unable to read all content from viewer '"+viewerpath+"'");
+    }
+    iViewer.close();
+
+    // Print output to response
+    // Get a modification time for our image
+    struct stat sb;
+    if( stat( viewerpath.c_str(), &sb ) == -1 ) {
+      delete [] buffer;
+      throw file_error( "Unable to open file " + viewerpath );
+    }
+    /// Image modification timestamp
+    time_t timestamp = sb.st_mtime;
+    tm *t;
+    const time_t tm1 = timestamp;
+    t = gmtime( &tm1 );
+    char strt[64];
+    strftime( strt, 64, "%a, %d %b %Y %H:%M:%S GMT", t );
+    string strTimestamp(strt);
+
+    // Get our Access-Control-Allow-Origin value, if any
+    string cors = session->response->getCORS();
+    string eof = "\r\n";
+
+    // Now output the info text
+    stringstream header;
+    header << "Server: iipsrv/" << VERSION << eof
+     << "Content-Type: text/html" << eof
+     << "Last-Modified: " << strTimestamp << eof
+     << session->response->getCacheControl() << eof;
+
+    if( !cors.empty() ) header << cors << eof;
+    header << eof;
+    session->out->printf( (const char*) header.str().c_str() );
+    session->out->putStr(buffer, length);
+
+    session->response->setImageSent();
+
+    delete [] buffer;
+
+    return;
+  }
 
   // Get the information about image, that can be shown in info.json
   unsigned int requested_width;

@@ -41,6 +41,7 @@
 #define CORS "";
 #define BASE_URL "";
 #define CACHE_CONTROL "max-age=86400"; // 24 hours
+#define VIEWER ""
 
 
 #include <string>
@@ -239,6 +240,19 @@ class Environment {
     if( envpara ) cache_control = std::string( envpara );
     else cache_control = CACHE_CONTROL;
     return cache_control;
+  }
+
+/// Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)
+/// Author: Martin Mikita <martin.mikita@klokantech.com>
+  static std::string getViewer(){
+    char* envpara = getenv( "VIEWER" );
+    std::string viewer;
+    if( envpara ){
+      viewer = std::string( envpara );
+    }
+    else viewer = VIEWER;
+
+    return viewer;
   }
 
 };
