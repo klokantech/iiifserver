@@ -269,6 +269,10 @@ int main( int argc, char *argv[] )
   string base_url = Environment::getBaseURL();
 
 
+  // Get requested HTTP Cache-Control setting
+  string cache_control = Environment::getCacheControl();
+
+
   // Print out some information
   if( loglevel >= 1 ){
     logfile << "Setting maximum image cache size to " << max_image_cache_size << "MB" << endl;
@@ -276,6 +280,7 @@ int main( int argc, char *argv[] )
     logfile << "Setting filename extension to '" << filename_extension << "'" << endl;
     logfile << "Setting default JPEG quality to " << jpeg_quality << endl;
     logfile << "Setting maximum CVT size to " << max_CVT << endl;
+    logfile << "Setting HTTP Cache-Control header to '" << cache_control << "'" << endl;
     logfile << "Setting 3D file sequence name pattern to '" << filename_pattern << "'" << endl;
     if( !cors.empty() ) logfile << "Setting Cross Origin Resource Sharing to '" << cors << "'" << endl;
     if( !base_url.empty() ) logfile << "Setting base URL to '" << base_url << "'" << endl;
@@ -451,6 +456,7 @@ int main( int argc, char *argv[] )
     // As the commands return images etc, they handle their own responses.
     IIPResponse response;
     response.setCORS( cors );
+    response.setCacheControl( cache_control );
 
     try{
 
@@ -508,7 +514,7 @@ int main( int argc, char *argv[] )
       if( (header = FCGX_GetParam("HTTP_IF_MODIFIED_SINCE", request.envp)) ){
 	session.headers["HTTP_IF_MODIFIED_SINCE"] = string(header);
 	if( loglevel >= 2 ){
-	  logfile << "HTTP Header: If-Modified-Since: " << session.headers["HTTP_IF_MODIFIED_SINCE"] << endl;
+	  logfile << "HTTP Header: If-Modified-Since: " << header << endl;
 	}
       }
 

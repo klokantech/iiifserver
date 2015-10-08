@@ -1,3 +1,45 @@
+07/09/2015:
+	- Fixed isfinite autoconf macro in acinclude.m4 to force float type
+
+
+06/08/2015:
+	- Added timestamp check and metadata reload for images that have been modified
+	- Added X-Powered-By header as a number of web servers strip out the Server header
+
+
+03/08/2015:
+	- Added palette support for bilevel images to handle cases where LUTs are inverted
+
+
+27/07/2015:
+	- Modified ROT command to accept horizontal flipping through "!" prefix as with IIIF.
+	- Cosmetic improvement to FIF logging.
+	- Modified TPTImage to disable use of memory mapping when opening images as this seems
+	  to be slower when opening very large TIFFs.
+
+
+24/07/2015:
+	- Added timers to all image processing functions in CVT.cc + code cleanup.
+
+
+21/07/2015:
+	- Fixed error in View.cc when setting regions sizes that extend beyond image boundaries:
+	  regions now cropped to boundaries.
+
+
+20/07/2015:
+	- More OpenMP parallelization and cleanups to Transform.cc
+
+
+17/07/2015:
+	- Increased buffer memory for JPEG encoding to handle certain images or tiles that
+	  encode at Q=100 to sizes significantly larger than the raw data.
+	- Added new CACHE_CONTROL server parameter to allow user control over this. If not
+	  set, it defaults to the previous default value of "max-age=86400".
+	- More image processing routines now parallelized with OpenMP: bilinear interpolation, 
+	  for example, now parallelized and considerably faster.
+
+
 19/03/2015:
 	- Fix to KakaduImage.cc to check for increases in stripe heights and make sure
 	  sufficient memory is allocated.
