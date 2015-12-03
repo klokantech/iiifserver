@@ -198,7 +198,7 @@ void IIIF::run( Session* session, const string& src ){
     string domains = Environment::getDomains();
     if (domains.length() > 0) {
       infoStringStream << "," << endl
-                       << "  domains: ["<<endl;
+                       << "  \"domains\": ["<<endl;
       size_t last_found = 0;
       size_t found = domains.find(",");
       while(found != string::npos) {
