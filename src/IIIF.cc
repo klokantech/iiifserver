@@ -193,21 +193,24 @@ void IIIF::run( Session* session, const string& src ){
 		     << "     { \"formats\" : [ \"jpg\" ]," << endl
 		     << "       \"qualities\" : [ \"native\",\"color\",\"gray\" ]," << endl
 		     << "       \"supports\" : [\"regionByPct\",\"sizeByForcedWh\",\"sizeByWh\",\"sizeAboveFull\",\"rotationBy90s\",\"mirroring\",\"gray\"] }" << endl
-		     << "  ]," << endl;
+		     << "  ]";
 
-    infoStringStream << "  domains: ["<<endl;
     string domains = Environment::getDomains();
-    size_t last_found = 0;
-    size_t found = domains.find(",");
-    while(found != string::npos) {
-      infoStringStream << "    \"" << domains.substr(last_found, found) << "\","<<endl;
-      last_found = found + 1;
-      found = domains.find(",");
+    if (domains.length() > 0) {
+      infoStringStream << "," << endl
+                       << "  domains: ["<<endl;
+      size_t last_found = 0;
+      size_t found = domains.find(",");
+      while(found != string::npos) {
+        infoStringStream << "    \"" << domains.substr(last_found, found) << "\","<<endl;
+        last_found = found + 1;
+        found = domains.find(",", last_found);
+      }
+      infoStringStream << "    \"" << domains.substr(last_found) << "\""<<endl
+                       << "  ]";
     }
-    infoStringStream << "    \"" << domains.substr(last_found) << "\""<<endl
-                     << "  ]"<<endl;
 
-    infoStringStream << "}";
+    infoStringStream << endl << "}";
 
     // Get our Access-Control-Allow-Origin value, if any
     string cors = session->response->getCORS();
