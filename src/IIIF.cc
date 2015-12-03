@@ -27,6 +27,7 @@
 #include "Tokenizer.h"
 #include "Transforms.h"
 #include "URL.h"
+#include "Environment.h"
 
 #if _MSC_VER
 #include "../windows/Time.h"
@@ -192,9 +193,21 @@ void IIIF::run( Session* session, const string& src ){
 		     << "     { \"formats\" : [ \"jpg\" ]," << endl
 		     << "       \"qualities\" : [ \"native\",\"color\",\"gray\" ]," << endl
 		     << "       \"supports\" : [\"regionByPct\",\"sizeByForcedWh\",\"sizeByWh\",\"sizeAboveFull\",\"rotationBy90s\",\"mirroring\",\"gray\"] }" << endl
-		     << "  ]" << endl
-		     << "}";
+		     << "  ]," << endl;
 
+    infoStringStream << "  domains: ["<<endl;
+    string domains = Environment::getDomains();
+    size_t last_found = 0;
+    size_t found = domains.find(",");
+    while(found != string::npos) {
+      infoStringStream << "    \"" << domains.substr(last_found, found) << "\","<<endl;
+      last_found = found + 1;
+      found = domains.find(",");
+    }
+    infoStringStream << "    \"" << domains.substr(last_found) << "\""<<endl
+                     << "  ]"<<endl;
+
+    infoStringStream << "}";
 
     // Get our Access-Control-Allow-Origin value, if any
     string cors = session->response->getCORS();

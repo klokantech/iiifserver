@@ -41,6 +41,7 @@
 #define CORS "";
 #define BASE_URL "";
 #define CACHE_CONTROL "max-age=86400"; // 24 hours
+#define DOMAINS ""
 
 
 #include <string>
@@ -239,6 +240,15 @@ class Environment {
     if( envpara ) cache_control = std::string( envpara );
     else cache_control = CACHE_CONTROL;
     return cache_control;
+  }
+
+
+  static std::string getDomains(){
+    char* envpara = getenv( "DOMAINS" );
+    std::string domains;
+    if( envpara ) domains = std::string( envpara );
+    else domains = DOMAINS;
+    return domains;
   }
 
 };
