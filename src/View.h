@@ -163,7 +163,7 @@ class View{
   /** @param h requested image height */
   void setRequestHeight( unsigned int h ){
     if( (max_size > 0) && (h > max_size) )
-      throw invalid_server_argument( std::string("Requested width is above server limit ") + s_max_size + " px" );
+      throw invalid_server_argument( std::string("Requested height is above server limit ") + s_max_size + " px" );
     requested_height = h;
   };
 
