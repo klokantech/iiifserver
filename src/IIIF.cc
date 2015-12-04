@@ -310,7 +310,17 @@ void IIIF::run( Session* session, const string& src ){
 
       // "full" request
       if( sizeString == "full" ){
-	// No need to do anything
+	// Resize to fit max size of View (otherwise it will finish with exception)
+        unsigned int max = session->view->getMaxSize();
+        float scale = (float)requested_width / (float)requested_height;
+        if (max > 0 && requested_width > max) {
+          requested_width = max;
+          requested_height = (unsigned int) round( (float)requested_width / scale );
+        }
+        if (max > 0 && requested_height > max) {
+          requested_height = max;
+          requested_width =  (unsigned int) round( (float)requested_height * scale );
+        }
       }
 
       // "pct:n" request

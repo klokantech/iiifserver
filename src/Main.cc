@@ -694,6 +694,17 @@ int main( int argc, char *argv[] )
       }
     }
 
+    // 501 - unsupported server argument
+    catch( const invalid_server_argument& error ){
+      string status = "Status: 501 Not Implemented\r\nServer: iipsrv/" + version + "\r\n\r\n" + error.what();
+      writer.printf( status.c_str() );
+      writer.flush();
+      if( loglevel >= 2 ){
+  logfile << error.what() << endl;
+  logfile << "Sending HTTP 501 Not Implemented" << endl;
+      }
+    }
+
     // Parameter errors
     catch( const invalid_argument& error ){
       string status = "Status: 400 Bad Request\r\nServer: iipsrv/" + version + "\r\n\r\n" + error.what();

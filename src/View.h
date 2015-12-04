@@ -25,6 +25,9 @@
 
 #include <cstddef>
 #include <vector>
+#include <stdexcept>
+#include <sstream>
+#include <string>
 
 #include "Transforms.h"
 
@@ -33,6 +36,13 @@
 #include "../windows/Time.h"
 #endif
 
+
+
+/// Define our own derived exception class for invalid server arguments
+class invalid_server_argument : public std::invalid_argument {
+ public:
+  invalid_server_argument(std::string s) : std::invalid_argument(s) { }
+};
 
 
 
@@ -57,6 +67,7 @@ class View{
   float contrast;                             /// Contrast adjustment requested by CNT command
   float gamma;                                /// Gamma adjustment requested by GAM command
   float rotation;                             /// Rotation requested by ROT command
+  std::string s_max_size;  // String for exception
 
 
   /// Internal function to calculate the resolution associated with a width
@@ -90,7 +101,7 @@ class View{
     resolution = 0; max_resolutions = 0;
     width = 0; height = 0;
     res_width = 0; res_height = 0;
-    min_size = 8; max_size = 0;
+    min_size = 8; max_size = 0; s_max_size = "";
     requested_width = 0; requested_height = 0;
     contrast = 1.0; gamma = 1.0;
     xangle = 0; yangle = 90;
@@ -110,7 +121,17 @@ class View{
 
   /// Set the maximum view port dimension
   /** @param m maximum viewport dimension */
-  void setMaxSize( unsigned int m ){ max_size = m; };
+  void setMaxSize( unsigned int m ) {
+    max_size = m;
+    std::ostringstream s;
+    s << m;
+    s_max_size = s.str();
+  };
+
+
+  /// Get the maximum view port dimension
+  /** @return maximum viewport dimension */
+  unsigned int getMaxSize() { return max_size; };
 
 
   /// Set the maximum view port dimension
@@ -126,8 +147,9 @@ class View{
   /// Set the size of the requested width
   /** @param w requested image width */
   void setRequestWidth( unsigned int w ){
-    if( (max_size > 0) && (w > max_size) ) requested_width = max_size;
-    else requested_width = w;
+    if( (max_size > 0) && (w > max_size) )
+      throw invalid_server_argument( std::string("Requested width is above server limit ") + s_max_size + " px" );
+    requested_width = w;
   };
 
 
@@ -139,8 +161,9 @@ class View{
   /// Set the size of the requested height
   /** @param h requested image height */
   void setRequestHeight( unsigned int h ){
-    if( (max_size > 0) && (h > max_size) ) requested_height = max_size;
-    else requested_height = h;
+    if( (max_size > 0) && (h > max_size) )
+      throw invalid_server_argument( std::string("Requested width is above server limit ") + s_max_size + " px" );
+    requested_height = h;
   };
 
 

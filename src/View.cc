@@ -222,7 +222,7 @@ unsigned int View::getRequestWidth(){
   }
 
   // Limit our requested width to the maximum export size
-  if( w > max_size ) w = max_size;
+  if( max_size > 0 && w > max_size ) w = max_size;
 
   return w;
 }
@@ -243,7 +243,7 @@ unsigned int View::getRequestHeight(){
   }
 
   // Limit our requested height to the maximum export size
-  if( h > max_size ) requested_height = max_size;
+  if( max_size > 0 && h > max_size ) h = max_size;
 
   return h;
 }
