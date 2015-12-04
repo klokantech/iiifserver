@@ -101,7 +101,7 @@ class View{
     resolution = 0; max_resolutions = 0;
     width = 0; height = 0;
     res_width = 0; res_height = 0;
-    min_size = 8; max_size = 0; s_max_size = "";
+    min_size = 8; max_size = 0;
     requested_width = 0; requested_height = 0;
     contrast = 1.0; gamma = 1.0;
     xangle = 0; yangle = 90;
@@ -111,6 +111,7 @@ class View{
     rotation = 0.0; flip = 0;
     maintain_aspect = true;
     colourspace = NONE;
+    s_max_size = "";
   };
 
 
