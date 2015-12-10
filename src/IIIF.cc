@@ -44,7 +44,9 @@
 
 using namespace std;
 
-
+char * viewer_content = NULL;
+int viewer_length;
+time_t viewer_timestamp;
 
 // The request is in the form {identifier}/{region}/{size}/{rotation}/{quality}{.format}
 //     eg. filename.tif/full/full/0/native.jpg
@@ -63,7 +65,7 @@ void IIIF::run( Session* session, const string& src ){
   string suffix, filename, params;
 
   // Get our default HTML viewer
-  string html_viewer = Environment::getViewer();
+  string viewer_path = Environment::getViewer();
   bool use_viewer = false;
 
   // First filter and decode our URL
@@ -90,7 +92,7 @@ void IIIF::run( Session* session, const string& src ){
     extension = argument.substr(lastDot + 1, string::npos);
   }
   // If we have HTML viewer, and extension is not JSON, nor JPG
-  if( !html_viewer.empty() && (extension.empty() || (extension != "json" && extension != "jpg")) ) {
+  if( !viewer_path.empty() && (extension.empty() || (extension != "json" && extension != "jpg")) ) {
     filename = argument;
     use_viewer = true;
   }
@@ -153,43 +155,45 @@ void IIIF::run( Session* session, const string& src ){
   /// Author: Martin Mikita <martin.mikita@klokantech.com>
   // We are using viewer only if file exists
   if(use_viewer) {
-    // Get the filesystem prefix if any
-    string filesystem_prefix = Environment::getFileSystemPrefix();
-    string viewerpath = filesystem_prefix + html_viewer;
-
     // Check existence of viewer
-    ifstream iViewer(viewerpath, ifstream::binary);
+    ifstream iViewer(viewer_path, ifstream::binary);
     if(!iViewer) {
-      throw file_error( "IIIF :: Unable to open viewer '"+viewerpath+"'");
+      throw file_error( "IIIF :: Unable to open viewer '"+viewer_path+"'");
     }
-    int length;
-    // Get length of file
-    iViewer.seekg(0, iViewer.end);
-    length = iViewer.tellg();
-    iViewer.seekg(0, iViewer.beg);
-
-    // Allocate memory
-    char * buffer = new char [length];
-    // Read data as a block;
-    iViewer.read(buffer, length);
-
-    if (!iViewer) {
-      delete [] buffer;
-      throw file_error( "IIIF :: Unable to read all content from viewer '"+viewerpath+"'");
+    // Get a modification time for response
+    struct stat sb;
+    if( stat( viewer_path.c_str(), &sb ) == -1 ) {
+      delete [] viewer_content;
+      viewer_content = NULL;
+      throw file_error( "Unable to open file " + viewer_path );
     }
+    // Viewer content was possibly changed, reload it
+    if(viewer_timestamp < sb.st_mtime || viewer_content == NULL) {
+      if(viewer_content != NULL)
+        delete [] viewer_content;
+
+      int length;
+      // Get length of file
+      iViewer.seekg(0, iViewer.end);
+      length = iViewer.tellg();
+      iViewer.seekg(0, iViewer.beg);
+
+      // Allocate memory
+      viewer_content = new char [length];
+      // Read data as a block;
+      iViewer.read(viewer_content, length);
+      if (!iViewer) {
+        delete [] viewer_content;
+        viewer_content = NULL;
+        throw file_error( "IIIF :: Unable to read all content from viewer '"+viewer_path+"'");
+      }
+      viewer_length = length;
+    } // ~ read file
     iViewer.close();
 
-    // Print output to response
-    // Get a modification time for our image
-    struct stat sb;
-    if( stat( viewerpath.c_str(), &sb ) == -1 ) {
-      delete [] buffer;
-      throw file_error( "Unable to open file " + viewerpath );
-    }
     /// Image modification timestamp
-    time_t timestamp = sb.st_mtime;
     tm *t;
-    const time_t tm1 = timestamp;
+    const time_t tm1 = viewer_timestamp;
     t = gmtime( &tm1 );
     char strt[64];
     strftime( strt, 64, "%a, %d %b %Y %H:%M:%S GMT", t );
@@ -209,14 +213,12 @@ void IIIF::run( Session* session, const string& src ){
     if( !cors.empty() ) header << cors << eof;
     header << eof;
     session->out->printf( (const char*) header.str().c_str() );
-    session->out->putStr(buffer, length);
+    session->out->putStr(viewer_content, viewer_length);
 
     session->response->setImageSent();
 
-    delete [] buffer;
-
     return;
-  }
+  } // ~ use viewer
 
   // Get the information about image, that can be shown in info.json
   unsigned int requested_width;
