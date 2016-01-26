@@ -7,7 +7,7 @@
     Culture of the Czech Republic.
 
 
-    Copyright (C) 2009-2015 IIPImage.
+    Copyright (C) 2009-2016 IIPImage.
     Author: Ruven Pillay
 
     This program is free software; you can redistribute it and/or modify
@@ -305,7 +305,7 @@ RawTile KakaduImage::getTile( int seq, int ang, unsigned int res, int layers, un
 
   if( res > numResolutions ){
     ostringstream tile_no;
-    tile_no << "Kakadu :: Asked for non-existant resolution: " << res;
+    tile_no << "Kakadu :: Asked for non-existent resolution: " << res;
     throw file_error( tile_no.str() );
   }
 
@@ -326,7 +326,7 @@ RawTile KakaduImage::getTile( int seq, int ang, unsigned int res, int layers, un
 
   if( tile >= ntlx*ntly ){
     ostringstream tile_no;
-    tile_no << "Kakadu :: Asked for non-existant tile: " << tile;
+    tile_no << "Kakadu :: Asked for non-existent tile: " << tile;
     throw file_error( tile_no.str() );
   }
 
@@ -577,7 +577,7 @@ void KakaduImage::process( unsigned int res, int layers, int xoffset, int yoffse
 #endif
 
       // Copy the data into the supplied buffer
-      void *b1 = NULL, *b2 = NULL;
+      void *b1, *b2;
       if( obpc == 16 ){
 	b1 = &( ((kdu_uint16*)stripe_buffer)[0] );
 	b2 = &( ((unsigned short*)buffer)[index] );

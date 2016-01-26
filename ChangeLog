@@ -1,3 +1,21 @@
+15/01/2016:
+	- Fixed a series of minor issues identified by Coverity scan
+
+
+12/01/2016:
+	- Added check to JPEGCompressor to reject images that are not 8 bits per channel
+	- Added new floatProcessing() function to View.h to simplify code in JTL and CVT
+
+
+06/01/2016:
+	- Added extra parameter check for incoherent region sizes for IIIF protocol
+
+
+21/12/2015:
+	- Fixed infinite loop in View::calculateResolution if requested size = 0. Set
+	  minimum output size to 1px.
+
+
 07/09/2015:
 	- Fixed isfinite autoconf macro in acinclude.m4 to force float type
 
@@ -114,7 +132,7 @@
 
 19/08/2014:
 	- Added aspect ratio flag in View.h for use in CVT.cc. Also cleaned up Main.cc to remove
-	  unnecesary logging and record extra http headers.
+	  unnecessary logging and record extra http headers.
 	- Added IIIF protocol version 2.0 support via the IIIF argument.
 
 
@@ -338,7 +356,7 @@
 
 
 30/10/2012:
-	- Autoconf cleanup. Removed unneccesary autoconf files: should now use
+	- Autoconf cleanup. Removed unnecessary autoconf files: should now use
 	  autogen.sh script first before ./configure
 
 
@@ -621,7 +639,7 @@
 	- Major changes to the HTTP headers sent by iipsrv. Added
 	  HTTP Server id and Last-Modified timestamps to all server output.
 	  Checks are now made for a If-Modified-Since response and a
-	  304 Not Modified reponse returned if the timestamps match.
+	  304 Not Modified response returned if the timestamps match.
 	  This should significantly improve server performance.
 
 

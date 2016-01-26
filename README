@@ -2,6 +2,7 @@ IIPImage - High Resolution Streaming Image Server
 =================================================
 
 [![Build Status](https://travis-ci.org/ruven/iipsrv.svg)](https://travis-ci.org/ruven/iipsrv)
+[![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)](https://scan.coverity.com/projects/ruven-iipsrv)
 
 ABOUT
 -----
@@ -38,6 +39,9 @@ doc subdirectory
 
 LICENCE
 -------
+
+[![badge-license]][link-license]
+
 iipsrv is released under the GNU General Public License (GPL). See the copyright
 notice COPYING in this directory for licensing details or go to
 http://www.gnu.org/licenses/gpl.html for more details.
@@ -157,7 +161,7 @@ If set to -1, all the available layers will be decoded by default.
 
 FILENAME_PATTERN: Pattern that follows the name stem for a 3D or multispectral 
 sequence. eg: "_pyr_" for FZ1_pyr_000_090.tif. The default is "_pyr_". This is 
-only relevent to 3D image sequences.
+only relevant to 3D image sequences.
 
 WATERMARK: TIFF image to use as watermark file. This image should be not be 
 bigger the tile size used for TIFF tiling. If bigger, it will simply be 
@@ -443,4 +447,4 @@ For example with lighttpd:
 Please refer to the project site http://iipimage.sourceforge.net for further details
 
 ------------------------------------------------------------------------------------
-(c) 2000-2015 Ruven Pillay <ruven@users.sourceforge.net>
+(c) 2000-2016 Ruven Pillay <ruven@users.sourceforge.net>
