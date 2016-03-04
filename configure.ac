@@ -237,12 +237,18 @@ if test "x${KAKADU}" = xtrue; then
 
 	# Check for AVX2 support in Kakadu
 	AC_CHECK_FILE( $kakadu_path/apps/make/avx2_stripe_transfer.o,
-		AC_MSG_RESULT([configure: Kakadu is >= v7.5.]);
-		KDU_75=true,
-		AC_MSG_RESULT([configure: Kakadu is < v7.5])
+		KDU_AVX2=true
 	)
-	if test "x${KDU_75}" = xtrue; then
-		LIBS="$LIBS $kakadu_path/apps/make/avx2_stripe_transfer.o $kakadu_path/apps/make/kdu_client_window.o"
+	if test "x${KDU_AVX2}" = xtrue; then
+		LIBS="$LIBS $kakadu_path/apps/make/avx2_stripe_transfer.o"
+	fi
+
+	# Check for kdu_client_window.o
+	AC_CHECK_FILE( $kakadu_path/apps/make/kdu_client_window.o,
+		KDU_CW=true
+	)
+	if test "x${KDU_CW}" = xtrue; then
+		LIBS="$LIBS $kakadu_path/apps/make/kdu_client_window.o"
 	fi
 fi
 
