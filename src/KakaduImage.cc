@@ -193,7 +193,12 @@ void KakaduImage::loadImageInfo( int seq, int ang ) throw(file_error)
 
   // Check for a palette and LUT - only used for bilevel images for now
   int cmp, plt, stream_id, data_format = 0/*JP2_CHANNEL_FORMAT_DEFAULT*/;
+#if defined(KDU_MAJOR_VERSION) && KDU_MAJOR_VERSION >= 7 && KDU_MINOR_VERSION >= 8
+  // Kakadu 7.8+ changed API for get_colour_mapping
   j2k_channels.get_colour_mapping(0,cmp,plt,stream_id,data_format);
+#else
+  j2k_channels.get_colour_mapping(0,cmp,plt,stream_id);
+#endif
   j2k_palette = jpx_stream.access_palette();
 
   if( j2k_palette.exists() && j2k_palette.get_num_luts()>0 ){
