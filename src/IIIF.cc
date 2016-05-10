@@ -2,7 +2,7 @@
 
     IIIF Request Command Handler Class Member Function
 
-    Copyright (C) 2014-2015 Ruven Pillay
+    Copyright (C) 2014-2016 Ruven Pillay
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -162,8 +162,14 @@ void IIIF::run( Session* session, const string& src ){
     }
     else{
       string request_uri = session->headers["REQUEST_URI"];
+      string scheme = session->headers["HTTPS"].empty() ? "http://" : "https://";
+
+      if (request_uri.empty()) {
+        throw invalid_argument( "IIIF: REQUEST_URI was not set in FastCGI request, so the ID parameter cannot be set." );
+      }
+
       request_uri.erase( request_uri.length()-suffix.length()-1, string::npos );
-      id = "http://" + session->headers["HTTP_HOST"] + request_uri;
+      id = scheme + session->headers["HTTP_HOST"] + request_uri;
     }
 
     // Decode and escape any URL-encoded characters from our file name for JSON
@@ -177,6 +183,22 @@ void IIIF::run( Session* session, const string& src ){
 		     << "  \"protocol\" : \"" << IIIF_PROTOCOL << "\"," << endl
 		     << "  \"width\" : " << width << "," << endl
 		     << "  \"height\" : " << height << "," << endl
+		     << "  \"sizes\" : [" << endl
+		     << "     { \"width\" : " << (*session->image)->image_widths[numResolutions-1]
+		     << ", \"height\" : " << (*session->image)->image_heights[numResolutions-1] << " }";
+
+    for( unsigned int i=numResolutions-2; i > 0; i-- ){
+      unsigned int w = (*session->image)->image_widths[i];
+      unsigned int h = (*session->image)->image_heights[i];
+      unsigned int max = session->view->getMaxSize();
+      // Only advertise images below our max size value
+      if( (max==0) || (w < max && h < max) ){
+	infoStringStream << "," << endl
+			 << "     { \"width\" : " << w << ", \"height\" : " << h << " }";
+      }
+    }
+
+    infoStringStream << endl << "  ]," << endl
 		     << "  \"tiles\" : [" << endl
 		     << "     { \"width\" : " << tw << ", \"height\" : " << th
 		     << ", \"scaleFactors\" : [ 1"; // Scale 1 is original image
@@ -194,7 +216,6 @@ void IIIF::run( Session* session, const string& src ){
 		     << "       \"supports\" : [\"regionByPct\",\"sizeByForcedWh\",\"sizeByWh\",\"sizeAboveFull\",\"rotationBy90s\",\"mirroring\",\"gray\"] }" << endl
 		     << "  ]" << endl
 		     << "}";
-
 
     // Get our Access-Control-Allow-Origin value, if any
     string cors = session->response->getCORS();
@@ -281,7 +302,7 @@ void IIIF::run( Session* session, const string& src ){
 	session->view->setViewHeight( region[3] / hd );
 
         // Incorrect region request
-        if( regionIzer.hasMoreTokens() || n < 4 ){
+        if( region[2] <= 0.0 || region[3] <= 0.0 || regionIzer.hasMoreTokens() || n < 4 ){
 	  throw invalid_argument( "IIIF: incorrect region format: " + regionString );
         }
 

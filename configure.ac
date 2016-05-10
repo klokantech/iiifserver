@@ -105,7 +105,7 @@ AC_SEARCH_LIBS(gzopen, z)
 
 
 #************************************************************
-# Check for libmemecached
+# Check for libmemcached
 
 AC_CHECK_HEADERS( libmemcached/memcached.h,
 	AC_SEARCH_LIBS( memcached_create,
@@ -258,13 +258,13 @@ AC_CHECK_LIB(c,get_nprocs_conf,AC_DEFINE(NPROCS))
 #     Check for PNG support
 #************************************************************
 
-AC_CHECK_HEADERS( png.h,
-	AC_SEARCH_LIBS(
-		png_create_read_struct,
-		png,
-		PNG=true,
-		PNG=false )
-)
+#AC_CHECK_HEADERS( png.h,
+#	AC_SEARCH_LIBS(
+#		png_create_read_struct,
+#		png,
+#		PNG=true,
+#		PNG=false )
+#)
 
 # Disable PNG for now
 PNG=false

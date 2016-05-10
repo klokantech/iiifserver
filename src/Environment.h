@@ -1,7 +1,7 @@
 /*
     IIP Environment Variable Class
 
-    Copyright (C) 2006-2015 Ruven Pillay.
+    Copyright (C) 2006-2016 Ruven Pillay.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 
 
 /* Define some default values
- */ 
+ */
 #define VERBOSITY 1
 #define LOGFILE "/tmp/iipsrv.log"
 #define MAX_IMAGE_CACHE_SIZE 10.0
@@ -113,7 +113,6 @@ class Environment {
     if( envpara ){
       max_CVT = atoi( envpara );
       if( max_CVT < 64 ) max_CVT = 64;
-      if( max_CVT == -1 ) max_CVT = -1;
     }
     else max_CVT = MAX_CVT;
 
@@ -133,11 +132,11 @@ class Environment {
 
   static std::string getFileSystemPrefix(){
     char* envpara = getenv( "FILESYSTEM_PREFIX" );
-    std::string filesystem_prefix; 
-    if( envpara ){ 
-      filesystem_prefix = std::string( envpara ); 
-    } 
-    else filesystem_prefix = FILESYSTEM_PREFIX; 
+    std::string filesystem_prefix;
+    if( envpara ){
+      filesystem_prefix = std::string( envpara );
+    }
+    else filesystem_prefix = FILESYSTEM_PREFIX;
 
     return filesystem_prefix;
   }
@@ -160,16 +159,16 @@ class Environment {
     char* envpara = getenv( "WATERMARK_PROBABILITY" );
 
     if( envpara ){
-      watermark_probability = atof( envpara ); 
-      if( watermark_probability > 1.0 ) watermark_probability = 1.0; 
-      if( watermark_probability < 0 ) watermark_probability = 0.0; 
+      watermark_probability = atof( envpara );
+      if( watermark_probability > 1.0 ) watermark_probability = 1.0;
+      if( watermark_probability < 0 ) watermark_probability = 0.0;
     }
 
     return watermark_probability;
   }
 
 
-  static float getWatermarkOpacity(){ 
+  static float getWatermarkOpacity(){
     float watermark_opacity = WATERMARK_OPACITY;
     char* envpara = getenv( "WATERMARK_OPACITY" );
 
