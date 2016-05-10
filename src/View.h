@@ -130,11 +130,6 @@ class View{
   };
 
 
-  /// Get the maximum view port dimension
-  /** @return maximum viewport dimension */
-  unsigned int getMaxSize() { return max_size; };
-
-
   /// Get the maximum allowed output size
   /* @return maximum output dimension */
   unsigned int getMaxSize(){ return max_size; };
