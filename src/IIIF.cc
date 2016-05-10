@@ -202,7 +202,7 @@ void IIIF::run( Session* session, const string& src ){
       size_t last_found = 0;
       size_t found = domains.find(",");
       while(found != string::npos) {
-        infoStringStream << "    \"" << domains.substr(last_found, found) << "\","<<endl;
+        infoStringStream << "    \"" << domains.substr(last_found, found - last_found) << "\","<<endl;
         last_found = found + 1;
         found = domains.find(",", last_found);
       }
