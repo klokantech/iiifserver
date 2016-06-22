@@ -243,7 +243,7 @@ void IIIF::run( Session* session, const string& src )
     // Keep track of the number of parameters than have been given
     int numOfTokens = 0;
 
-    // Region Parameter: { "full"; "x,y,w,h"; "pct:x,y,w,h" }
+    // Region Parameter: { "full"; "x,y,w,h"; "pct:x,y,w,h"; "square" }
     if ( izer.hasMoreTokens() ){
 
       // Our region parameters
@@ -260,6 +260,54 @@ void IIIF::run( Session* session, const string& src )
         region[2] = 1.0;
         region[3] = 1.0;
       }
+
+      /// Copyright (C) 2016 Klokan Technologies GmbH (https://www.klokantech.com/)
+      /// Author: Martin Mikita <martin.mikita@klokantech.com>
+      // Square export request
+      else if(regionString == "square") {
+        // Added in 2.1
+        // Return a square image that preserves the short edge of the content.
+        // The square is centered at a point of the server's choosing.
+        // We are centering the image (horizontally or vertically)
+
+        // making square with the lower size of image
+        unsigned int diff = (unsigned int)((long)abs((long)width - (long)height));
+
+        // Get square size
+        float square = (float) min(width, height);
+
+        // Prepare full region
+        region[0] = 0.0;
+        region[1] = 0.0;
+        region[2] = 1.0;
+        region[3] = 1.0;
+
+        // If image is wider, we change index 0 and 2
+        // otherwise 1 and 3
+        int ind = (width > height) ? 0 : 1;
+
+        // Get size for change
+        float size = (width > height) ? (float)width : (float)height;
+
+        if( session->loglevel > 4 ){
+          *(session->logfile) << "IIIF :: Requested square: width:" << width << ", height:" << height
+                        << ", diff:" << diff << ", diff/2/size:" << ( (float)(diff/2) / size )
+                        << ", square:" << square << ", size:" << size << endl;
+        }
+
+        // First number is x or y position (index 0 or 1)
+        // Set x/y position to 1/2 of difference between width and height
+        region[ind] = ( (float)(diff/2) / size );
+        // Second number is width or height (index 2 or 3)
+        // Set width/height to preserve scale of image
+        region[2 + ind] = ( square / size );
+
+        session->view->setViewLeft( region[0] );
+        session->view->setViewTop( region[1] );
+        session->view->setViewWidth( region[2] );
+        session->view->setViewHeight( region[3] );
+      }
+
       // Region export request
       else{
 
