@@ -7,7 +7,7 @@
     Culture of the Czech Republic.
 
 
-    Copyright (C) 2009-2015 IIPImage.
+    Copyright (C) 2009-2016 IIPImage.
     Author: Ruven Pillay
 
     This program is free software; you can redistribute it and/or modify
@@ -56,11 +56,6 @@ unsigned int get_nprocs_conf(){
 
 
 using namespace std;
-
-
-#ifdef DEBUG
-extern std::ofstream logfile;
-#endif
 
 
 void KakaduImage::openImage() throw (file_error)
@@ -192,8 +187,14 @@ void KakaduImage::loadImageInfo( int seq, int ang ) throw(file_error)
 
 
   // Check for a palette and LUT - only used for bilevel images for now
-  int cmp, plt, stream_id;
+  int cmp, plt, stream_id,format=0;
+#if defined(KDU_MAJOR_VERSION) && (KDU_MAJOR_VERSION >= 7) && (KDU_MINOR_VERSION >= 8)
+  // API change for get_colour_mapping in Kakadu 7.8
+  j2k_channels.get_colour_mapping(0,cmp,plt,stream_id,format);
+#else
   j2k_channels.get_colour_mapping(0,cmp,plt,stream_id);
+#endif
+
   j2k_palette = jpx_stream.access_palette();
 
   if( j2k_palette.exists() && j2k_palette.get_num_luts()>0 ){
@@ -305,7 +306,7 @@ RawTile KakaduImage::getTile( int seq, int ang, unsigned int res, int layers, un
 
   if( res > numResolutions ){
     ostringstream tile_no;
-    tile_no << "Kakadu :: Asked for non-existant resolution: " << res;
+    tile_no << "Kakadu :: Asked for non-existent resolution: " << res;
     throw file_error( tile_no.str() );
   }
 
@@ -326,7 +327,7 @@ RawTile KakaduImage::getTile( int seq, int ang, unsigned int res, int layers, un
 
   if( tile >= ntlx*ntly ){
     ostringstream tile_no;
-    tile_no << "Kakadu :: Asked for non-existant tile: " << tile;
+    tile_no << "Kakadu :: Asked for non-existent tile: " << tile;
     throw file_error( tile_no.str() );
   }
 
@@ -577,12 +578,12 @@ void KakaduImage::process( unsigned int res, int layers, int xoffset, int yoffse
 #endif
 
       // Copy the data into the supplied buffer
-      void *b1 = NULL, *b2 = NULL;
+      void *b1, *b2;
       if( obpc == 16 ){
 	b1 = &( ((kdu_uint16*)stripe_buffer)[0] );
 	b2 = &( ((unsigned short*)buffer)[index] );
       }
-      else if( obpc == 8 ){
+      else{ // if( obpc == 8 ){
 	b1 = &( ((kdu_byte*)stripe_buffer)[0] );
 	b2 = &( ((unsigned char*)buffer)[index] );
 
