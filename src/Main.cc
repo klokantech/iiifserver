@@ -75,8 +75,10 @@ static void unsetenv(char *env_name) {
 #endif
 
 
-//#define DEBUG 1
+// Define our default socket backlog
+#define DEFAULT_BACKLOG 2048
 
+//#define DEBUG 1
 
 using namespace std;
 
@@ -199,13 +201,18 @@ int main( int argc, char *argv[] )
       logfile << "No socket specified" << endl << endl;
       exit(1);
     }
-    listen_socket = FCGX_OpenSocket( socket.c_str(), 10 );
+    int backlog = DEFAULT_BACKLOG;
+    if( argv[3] && (string(argv[3]) == "--backlog") ){
+      string bklg = argv[4];
+      if( bklg.length() ) backlog = atoi( bklg.c_str() );
+    }
+    listen_socket = FCGX_OpenSocket( socket.c_str(), backlog );
     if( listen_socket < 0 ){
       logfile << "Unable to open socket '" << socket << "'" << endl << endl;
       exit(1);
     }
     standalone = true;
-    logfile << "Running in standalone mode on socket: " << socket << endl << endl;
+    logfile << "Running in standalone mode on socket: " << socket << " with backlog: " << backlog << endl << endl;
   }
 
   if( FCGX_InitRequest( &request, listen_socket, 0 ) ) return(1);
@@ -501,13 +508,19 @@ int main( int argc, char *argv[] )
 
       // Get several other HTTP headers
       if( (header = FCGX_GetParam("SERVER_PROTOCOL", request.envp)) ){
-	session.headers["SERVER_PROTOCOL"] = string(header);
+        session.headers["SERVER_PROTOCOL"] = string(header);
       }
       if( (header = FCGX_GetParam("HTTP_HOST", request.envp)) ){
-	session.headers["HTTP_HOST"] = string(header);
+        session.headers["HTTP_HOST"] = string(header);
       }
       if( (header = FCGX_GetParam("REQUEST_URI", request.envp)) ){
-	session.headers["REQUEST_URI"] = string(header);
+        session.headers["REQUEST_URI"] = string(header);
+      }
+      if ( (header = FCGX_GetParam("HTTPS", request.envp)) ) {
+        session.headers["HTTPS"] = string(header);
+      }
+      if ( (header = FCGX_GetParam("HTTP_X_IIIF_ID", request.envp)) ) {
+        session.headers["HTTP_X_IIIF_ID"] = string(header);
       }
 
       // Check for IF_MODIFIED_SINCE

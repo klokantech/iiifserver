@@ -58,11 +58,6 @@ unsigned int get_nprocs_conf(){
 using namespace std;
 
 
-#ifdef DEBUG
-extern std::ofstream logfile;
-#endif
-
-
 void KakaduImage::openImage() throw (file_error)
 {
   string filename = getFileName( currentX, currentY );
@@ -192,8 +187,14 @@ void KakaduImage::loadImageInfo( int seq, int ang ) throw(file_error)
 
 
   // Check for a palette and LUT - only used for bilevel images for now
-  int cmp, plt, stream_id;
+  int cmp, plt, stream_id,format=0;
+#if defined(KDU_MAJOR_VERSION) && (KDU_MAJOR_VERSION >= 7) && (KDU_MINOR_VERSION >= 8)
+  // API change for get_colour_mapping in Kakadu 7.8
+  j2k_channels.get_colour_mapping(0,cmp,plt,stream_id,format);
+#else
   j2k_channels.get_colour_mapping(0,cmp,plt,stream_id);
+#endif
+
   j2k_palette = jpx_stream.access_palette();
 
   if( j2k_palette.exists() && j2k_palette.get_num_luts()>0 ){
@@ -582,7 +583,7 @@ void KakaduImage::process( unsigned int res, int layers, int xoffset, int yoffse
 	b1 = &( ((kdu_uint16*)stripe_buffer)[0] );
 	b2 = &( ((unsigned short*)buffer)[index] );
       }
-      else if( obpc == 8 ){
+      else{ // if( obpc == 8 ){
 	b1 = &( ((kdu_byte*)stripe_buffer)[0] );
 	b2 = &( ((unsigned char*)buffer)[index] );
 
