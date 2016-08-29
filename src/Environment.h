@@ -41,6 +41,7 @@
 #define CORS "";
 #define BASE_URL "";
 #define CACHE_CONTROL "max-age=86400"; // 24 hours
+#define ALLOW_UPSCALING true
 #define VIEWER ""
 
 
@@ -239,6 +240,14 @@ class Environment {
     if( envpara ) cache_control = std::string( envpara );
     else cache_control = CACHE_CONTROL;
     return cache_control;
+  }
+  
+  static bool getAllowUpscaling(){
+    char* envpara = getenv( "ALLOW_UPSCALING" );
+    bool allow_upscaling;
+    if( envpara ) allow_upscaling =  atoi( envpara ); //implicit cast to boolean, all values other than '0' treated as true
+    else allow_upscaling = ALLOW_UPSCALING;
+    return allow_upscaling;
   }
 
 /// Copyright (C) 2015 Klokan Technologies GmbH (http://www.klokantech.com/)

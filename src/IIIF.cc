@@ -277,14 +277,14 @@ void IIIF::run( Session* session, const string& src )
                      << "     { \"width\" : " << (*session->image)->image_widths[numResolutions - 1]
                      << ", \"height\" : " << (*session->image)->image_heights[numResolutions - 1] << " }";
 
-    for ( unsigned int i = numResolutions - 2; i > 0; i-- ){
+    for ( int i = numResolutions - 2; i > 0; i-- ){
       unsigned int w = (*session->image)->image_widths[i];
       unsigned int h = (*session->image)->image_heights[i];
       unsigned int max = session->view->getMaxSize();
       // Only advertise images below our max size value
-      if ( (max == 0) || (w < max && h < max) ){
-        infoStringStream << "," << endl
-                         << "     { \"width\" : " << w << ", \"height\" : " << h << " }";
+      if( (max == 0) || (w < max && h < max) ){
+	infoStringStream << "," << endl
+			 << "     { \"width\" : " << w << ", \"height\" : " << h << " }";
       }
     }
 
@@ -303,7 +303,7 @@ void IIIF::run( Session* session, const string& src )
                      << "     \"" << IIIF_PROFILE << "\"," << endl
                      << "     { \"formats\" : [ \"jpg\" ]," << endl
                      << "       \"qualities\" : [ \"native\",\"color\",\"gray\" ]," << endl
-                     << "       \"supports\" : [\"regionByPct\",\"sizeByForcedWh\",\"sizeByWh\",\"sizeAboveFull\",\"rotationBy90s\",\"mirroring\",\"gray\"] }" << endl
+                     << "       \"supports\" : [\"regionByPct\",\"sizeByForcedWh\",\"sizeByWh\",\"sizeAboveFull\",\"rotationBy90s\",\"mirroring\"] }" << endl
                      << "  ]" << endl
                      << "}";
 
@@ -431,6 +431,7 @@ void IIIF::run( Session* session, const string& src )
 
       // "w,h", "w,", ",h", "!w,h" requests
       else{
+
 
         // !w,h request - remove !, remember it and continue as if w,h request
         if ( sizeString.substr(0, 1) == "!" ) sizeString.erase(0, 1);
