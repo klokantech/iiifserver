@@ -1,6 +1,7 @@
 IIPImage - High Resolution Streaming Image Server
 =================================================
 
+[![GPLv3 Licensed](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org/copyleft/gpl.html)
 [![Build Status](https://travis-ci.org/ruven/iipsrv.svg)](https://travis-ci.org/ruven/iipsrv)
 [![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)](https://scan.coverity.com/projects/ruven-iipsrv)
 
@@ -24,7 +25,7 @@ FEATURES
 * Multispectral image support
 * Dynamic watermarking
 * Memcached support
-* 3D panoramic views 
+* 3D panoramic views
 * Dynamic hillshading of 3D surface topologies
 * Dynamic decoder module capability
 
@@ -39,8 +40,6 @@ doc subdirectory
 
 LICENCE
 -------
-
-[![badge-license]][link-license]
 
 iipsrv is released under the GNU General Public License (GPL). See the copyright
 notice COPYING in this directory for licensing details or go to
@@ -58,7 +57,7 @@ See COPYING.FCGI for licensing information for these libraries.
 REQUIREMENTS
 ------------
 Requirements: libtiff, zlib and the IJG JPEG development libraries.
-Optional: libmemcached (for Memcached) and Kakadu (for JPEG2000)
+Optional: libmemcached (for Memcached) and Kakadu or OpenJPEG (for JPEG2000).
 
 Plus, of course, an fcgi-enabled web server. The server has been successfully
 tested on the following servers:
@@ -107,12 +106,26 @@ during the build process.
 OPTIONAL LIBRARIES: KAKADU
 --------------------------
 IIPImage is able to decode JPEG2000 images via the Kakadu SDK
-(http://www.kakadusoftware.com). This is, however, not open source and will
+(http://www.kakadusoftware.com). This is, however, not open source and you will
 need to purchase a license for the source code. In order to use, first build
-the Kakadu SDK as per the instructions supplied with the SDK. Then, the
+the Kakadu SDK as per the instructions supplied with the SDK. Then, supply the
 following parameters to the ./configure command
 
     --with-kakadu=/path/to/kakadu/distribution
+
+
+
+OPTIONAL LIBRARIES: OPENJPEG
+----------------------------
+
+IIPImage is able to decode JPEG2000 images via the open source OpenJPEG 
+library (http://www.openjpeg.org/). This is currently experimental and is 
+much slower than Kakadu. It is disabled by default: use --enable-openjpeg 
+or provide the path to the source code 
+(--with-openjpeg=/path/to/openjpeg/distribution) to enable. If no path is
+given, the default system verson of OpenJPEG will be used if available. 
+If Kakadu support has been requested, however, OpenJPEG will be automatically 
+disabled.
 
 
 
@@ -153,6 +166,10 @@ compression) and 100 (highest image quality). The default is 75.
 MAX_CVT: Limits the maximum image dimensions in pixels (the WID or HEI 
 commands) allowable for dynamic JPEG export via the CVT command. This 
 prevents huge requests from overloading the server. The default is 5000.
+
+ALLOW_UPSCALING: Determines whether an image may be rendered at a size greater
+than that of the source image. A value of 0 will prevent upscaling.
+The default is 1 (upscaling is allowed).
 
 MAX_LAYERS: The maximum number of quality layers to decode for images that support 
 progressive quality encoding, such as JPEG2000. Ignored for other file 
@@ -250,7 +267,9 @@ FastCgiServer /usr/local/httpd/fcgi-bin/iipsrv.fcgi \
 -initial-env MAX_IMAGE_CACHE_SIZE=10 \
 -initial-env FILENAME_PATTERN=_pyr_ \
 -initial-env JPEG_QUALITY=50 \
--initial-env MAX_CVT=3000
+-initial-env MAX_CVT=3000 \
+-listen-queue-depth 2048 \
+-processes 1
 --------------------------------------------------------------------
 ```
 

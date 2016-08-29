@@ -1,3 +1,40 @@
+29/08/2016:
+	- Fix to bug in rotation code for 270 degs introduced when parallelization added.
+	- Added test for pkg-config to configure.ac script.
+
+
+10/08/2016:
+	- Update to configure.ac script for OpenJPEG
+
+
+04/08/2016:
+	- Fix to info.json code in IIIF.cc to avoid problems with images containing only
+	  one resolution level.
+	- Fixed bug in filter_contrast() due to incorrectly calculated buffer size.
+
+
+08/07/2016:
+	- Removed "gray" from IIIF list of supported features - already specified in the
+	  qualities list.
+
+
+07/06/2016:
+	- Added fix for API change in get_colour_mapping() function in Kakadu version 7.8
+
+
+02/06/2016:
+	- Type change of counter in filter_contrast to long to avoid overflows with large
+	  image exports.
+
+
+22/03/2016: Version 1.0 Released
+
+
+08/03/2016:
+	- Added sizes field to IIIF JSON responses giving list of exportable pyramid sizes
+	  smaller than MAX_CVT.
+
+
 29/02/2016:
 	- Added support for 1 bit bilevel TIFF
 
