@@ -210,7 +210,7 @@ void IIIF::run( Session* session, const string& src )
                      << "     \"" << IIIF_PROFILE << "\"," << endl
                      << "     { \"formats\" : [ \"jpg\" ]," << endl
                      << "       \"qualities\" : [ \"native\",\"color\",\"gray\" ]," << endl
-                     << "       \"supports\" : [\"regionByPct\",\"sizeByForcedWh\",\"sizeByWh\",\"sizeAboveFull\",\"rotationBy90s\",\"mirroring\"] }" << endl
+                     << "       \"supports\" : [\"regionByPct\",\"regionSquare\",\"sizeByForcedWh\",\"sizeByWh\",\"sizeAboveFull\",\"rotationBy90s\",\"mirroring\"] }" << endl
                      << "  ]" << endl
                      << "}";
 
@@ -260,6 +260,21 @@ void IIIF::run( Session* session, const string& src )
         region[2] = 1.0;
         region[3] = 1.0;
       }
+      // Square region export using centered crop
+      else if (regionString == "square" ){
+        if ( height > width ){
+	  float h = (float)width/(float)height;
+	  session->view->setViewTop( (1-h)/2.0 );
+	  session->view->setViewHeight( h );
+        }
+	else if ( width > height ){
+	  float w = (float)height/(float)width;
+	  session->view->setViewLeft( (1-w)/2.0 );
+	  session->view->setViewWidth( w );
+        }
+	// No need for default else clause if image is already square
+      }
+
       // Region export request
       else{
 
@@ -349,6 +364,7 @@ void IIIF::run( Session* session, const string& src )
       // "w,h", "w,", ",h", "!w,h" requests
       else{
 
+	unsigned int max_size = session->view->getMaxSize();
 
         // !w,h request - remove !, remember it and continue as if w,h request
         if ( sizeString.substr(0, 1) == "!" ) sizeString.erase(0, 1);
@@ -391,6 +407,7 @@ void IIIF::run( Session* session, const string& src )
       if ( requested_width == 0 || requested_height == 0 ){
         throw invalid_argument( "IIIF: invalid size" );
       }
+
 
       session->view->setRequestWidth( requested_width );
       session->view->setRequestHeight( requested_height );
