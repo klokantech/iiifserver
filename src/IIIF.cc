@@ -334,19 +334,19 @@ void IIIF::run( Session* session, const string& src )
       // Calculate the width and height of our region
       requested_width = session->view->getViewWidth();
       requested_height = session->view->getViewHeight();
+      float ratio = (float)requested_width / (float)requested_height;
+      unsigned int max_size = session->view->getMaxSize();
 
       // "full" request
       if( sizeString == "full" ){
         // Resize to fit max size of View (otherwise it will finish with exception)
-        unsigned int max = session->view->getMaxSize();
-        float scale = (float)requested_width / (float)requested_height;
-        if (max > 0 && requested_width > max) {
-          requested_width = max;
-          requested_height = (unsigned int) round( (float)requested_width / scale );
+        if (max_size > 0 && requested_width > max_size) {
+          requested_width = max_size;
+          requested_height = (unsigned int) round( (float)requested_width / ratio );
         }
-        if (max > 0 && requested_height > max) {
-          requested_height = max;
-          requested_width =  (unsigned int) round( (float)requested_height * scale );
+        if (max_size > 0 && requested_height > max_size) {
+          requested_height = max_size;
+          requested_width =  (unsigned int) round( (float)requested_height * ratio );
         }
       }
 
@@ -364,8 +364,6 @@ void IIIF::run( Session* session, const string& src )
       // "w,h", "w,", ",h", "!w,h" requests
       else{
 
-	unsigned int max_size = session->view->getMaxSize();
-
         // !w,h request - remove !, remember it and continue as if w,h request
         if ( sizeString.substr(0, 1) == "!" ) sizeString.erase(0, 1);
         // Otherwise tell our view to break aspect ratio
@@ -382,7 +380,9 @@ void IIIF::run( Session* session, const string& src )
         else if ( pos == 0 ){
           istringstream i( sizeString.substr( 1, string::npos ) );
           if ( !(i >> requested_height) ) throw invalid_argument( "invalid height" );
-          requested_width = round( (float)requested_height * session->view->getViewWidth() / session->view->getViewHeight() );
+          requested_width = round( (float)requested_height * ratio );
+          // Maintain aspect ratio in this case
+          session->view->maintain_aspect = true;
         }
 
         // If comma is not at the beginning, we must have a "width,height" or "width," request
@@ -390,7 +390,9 @@ void IIIF::run( Session* session, const string& src )
         else if ( pos == sizeString.length() - 1 ){
           istringstream i( sizeString.substr( 0, string::npos - 1 ) );
           if ( !(i >> requested_width ) ) throw invalid_argument( "invalid width" );
-          requested_height = round( (float)requested_width * session->view->getViewHeight() / session->view->getViewWidth() );
+          requested_height = round( (float)requested_width / ratio );
+          // Maintain aspect ratio in this case
+          session->view->maintain_aspect = true;
         }
 
         // Remaining case is "width,height"
@@ -408,6 +410,17 @@ void IIIF::run( Session* session, const string& src )
         throw invalid_argument( "IIIF: invalid size" );
       }
 
+      // Limit our requested size to the maximum allowable size if necessary
+      if( requested_width > max_size || requested_height > max_size ){
+	if( ratio > 1.0 ){
+	  requested_width = max_size;
+	  requested_height = session->view->maintain_aspect ? round(max_size*ratio) : max_size;
+	}
+	else{
+	  requested_height = max_size;
+	  requested_width = session->view->maintain_aspect ? round(max_size/ratio) : max_size;
+	}
+      }
 
       session->view->setRequestWidth( requested_width );
       session->view->setRequestHeight( requested_height );
