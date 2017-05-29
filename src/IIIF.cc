@@ -93,7 +93,7 @@ void IIIF::run( Session* session, const string& src )
     filename = argument;
     use_viewer = true;
   }
-  else if( lastSlashPos < argument.length() && lastSlashPos > 0 ){
+  else if ( lastSlashPos != string::npos ) {
 
     suffix = argument.substr( lastSlashPos + 1, string::npos );
 
@@ -104,16 +104,13 @@ void IIIF::run( Session* session, const string& src )
     else{
       size_t positionTmp = lastSlashPos;
       for ( int i = 0; i < 3; i++ ){
-        positionTmp = argument.substr(0, positionTmp).find_last_of("/");
+        positionTmp = argument.find_last_of("/", positionTmp - 1);
+        if ( positionTmp == string::npos ){
+          throw invalid_argument( "IIIF: Not enough parameters" );
+        }
       }
-      if ( positionTmp > 0 ){
-        filename = argument.substr(0, positionTmp);
-        params = argument.substr(positionTmp + 1, string::npos);
-      }
-      else{
-        // No extra parameters
-        throw invalid_argument( "IIIF: Not enough parameters" );
-      }
+      filename = argument.substr(0, positionTmp);
+      params = argument.substr(positionTmp + 1, string::npos);
     }
   }
   else{
@@ -303,7 +300,7 @@ void IIIF::run( Session* session, const string& src )
                      << "     \"" << IIIF_PROFILE << "\"," << endl
                      << "     { \"formats\" : [ \"jpg\" ]," << endl
                      << "       \"qualities\" : [ \"native\",\"color\",\"gray\" ]," << endl
-                     << "       \"supports\" : [\"regionByPct\",\"sizeByForcedWh\",\"sizeByWh\",\"sizeAboveFull\",\"rotationBy90s\",\"mirroring\"] }" << endl
+                     << "       \"supports\" : [\"regionByPct\",\"regionSquare\",\"sizeByForcedWh\",\"sizeByWh\",\"sizeAboveFull\",\"rotationBy90s\",\"mirroring\"] }" << endl
                      << "  ]" << endl
                      << "}";
 
@@ -353,6 +350,21 @@ void IIIF::run( Session* session, const string& src )
         region[2] = 1.0;
         region[3] = 1.0;
       }
+      // Square region export using centered crop
+      else if (regionString == "square" ){
+        if ( height > width ){
+	  float h = (float)width/(float)height;
+	  session->view->setViewTop( (1-h)/2.0 );
+	  session->view->setViewHeight( h );
+        }
+	else if ( width > height ){
+	  float w = (float)height/(float)width;
+	  session->view->setViewLeft( (1-w)/2.0 );
+	  session->view->setViewWidth( w );
+        }
+	// No need for default else clause if image is already square
+      }
+
       // Region export request
       else{
 
@@ -412,6 +424,8 @@ void IIIF::run( Session* session, const string& src )
       // Calculate the width and height of our region
       requested_width = session->view->getViewWidth();
       requested_height = session->view->getViewHeight();
+      float ratio = (float)requested_width / (float)requested_height;
+      unsigned int max_size = session->view->getMaxSize();
 
       // "full" request
       if ( sizeString == "full" ){
@@ -432,7 +446,6 @@ void IIIF::run( Session* session, const string& src )
       // "w,h", "w,", ",h", "!w,h" requests
       else{
 
-
         // !w,h request - remove !, remember it and continue as if w,h request
         if ( sizeString.substr(0, 1) == "!" ) sizeString.erase(0, 1);
         // Otherwise tell our view to break aspect ratio
@@ -449,7 +462,9 @@ void IIIF::run( Session* session, const string& src )
         else if ( pos == 0 ){
           istringstream i( sizeString.substr( 1, string::npos ) );
           if ( !(i >> requested_height) ) throw invalid_argument( "invalid height" );
-          requested_width = round( (float)requested_height * session->view->getViewWidth() / session->view->getViewHeight() );
+	  requested_width = round( (float)requested_height * ratio );
+	  // Maintain aspect ratio in this case
+ 	  session->view->maintain_aspect = true;
         }
 
         // If comma is not at the beginning, we must have a "width,height" or "width," request
@@ -457,7 +472,9 @@ void IIIF::run( Session* session, const string& src )
         else if ( pos == sizeString.length() - 1 ){
           istringstream i( sizeString.substr( 0, string::npos - 1 ) );
           if ( !(i >> requested_width ) ) throw invalid_argument( "invalid width" );
-          requested_height = round( (float)requested_width * session->view->getViewHeight() / session->view->getViewWidth() );
+	  requested_height = round( (float)requested_width / ratio );
+	  // Maintain aspect ratio in this case
+ 	  session->view->maintain_aspect = true;
         }
 
         // Remaining case is "width,height"
@@ -473,6 +490,18 @@ void IIIF::run( Session* session, const string& src )
 
       if ( requested_width == 0 || requested_height == 0 ){
         throw invalid_argument( "IIIF: invalid size" );
+      }
+
+      // Limit our requested size to the maximum allowable size if necessary
+      if( requested_width > max_size || requested_height > max_size ){
+	if( ratio > 1.0 ){
+	  requested_width = max_size;
+	  requested_height = session->view->maintain_aspect ? round(max_size*ratio) : max_size;
+	}
+	else{
+	  requested_height = max_size;
+	  requested_width = session->view->maintain_aspect ? round(max_size/ratio) : max_size;
+	}
       }
 
       session->view->setRequestWidth( requested_width );
@@ -608,6 +637,7 @@ void IIIF::run( Session* session, const string& src )
   if ( ( session->view->maintain_aspect && (requested_res > 0) &&
          (requested_width == tw) && (requested_height == th) &&
          (view_left % tw == 0) && (view_top % th == 0) &&
+         (session->view->getViewWidth() % tw == 0) && (session->view->getViewHeight() % th == 0) &&
          (session->view->getViewWidth() < im_width) && (session->view->getViewHeight() < im_height) )
        ||
        ( session->view->maintain_aspect && (requested_res == 0) &&

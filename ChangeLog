@@ -1,3 +1,37 @@
+05/04/2017:
+	- Fixed crash in KakaduImage.cc when zero sized images are requested
+
+
+29/03/2017:
+	- Fixed scaling factor for bilinear interpolation in Transforms.cc
+
+
+02/03/2017:
+	- Added extra conditions to JTL uncompressed tile request and slightly
+	  refactored code to fix bug when greyscale conversion requested
+
+
+08/02/2017:
+	- Extra try/catch in KakaduImage for images with missing codestreams
+
+
+29/11/2016:
+	- Another update to IIIF aspect ratio code
+
+
+28/11/2016:
+	- Update to aspect ratio code for sizes exceeding max CVT limit
+
+
+18/11/2016:
+	- Modified IIIF.cc to respect aspect ratio when only width or height size
+	  parameter is given and size exceeds server max CVT limit.
+
+
+16/10/2016:
+	- Added IIIF 2.1 square region support
+
+
 29/08/2016:
 	- Fix to bug in rotation code for 270 degs introduced when parallelization added.
 	- Added test for pkg-config to configure.ac script.

@@ -83,9 +83,16 @@ void KakaduImage::openImage() throw (file_error)
     throw file_error( "Kakadu :: Unable to open '"+filename+"'"); // Rethrow the exception
   }
 
+
   // Get our JPX codestream
-  jpx_stream = jpx_input.access_codestream(0);
-  if( !jpx_stream.exists() ) throw file_error( "Kakadu :: No codestream in file '"+filename+"'"); // Throw exception
+  try{
+    jpx_stream = jpx_input.access_codestream(0);
+    if( !jpx_stream.exists() ) throw 1;
+  }
+  catch (...){
+    throw file_error( "Kakadu :: No codestream in file '"+filename+"'"); // Rethrow exception
+  }
+
 
   // Open the underlying JPEG2000 codestream
   input = NULL;
@@ -510,7 +517,6 @@ void KakaduImage::process( unsigned int res, int layers, int xoffset, int yoffse
     logfile << "Kakadu :: About to pull stripes" << endl;
 #endif
 
-
     int index = 0;
     bool continues = true;
 
@@ -540,7 +546,7 @@ void KakaduImage::process( unsigned int res, int layers, int xoffset, int yoffse
 
     while( continues ){
 
-      
+
       decompressor.get_recommended_stripe_heights( comp_dims.size.y,
 						   1024, stripe_heights, NULL );
 
@@ -560,6 +566,14 @@ void KakaduImage::process( unsigned int res, int layers, int xoffset, int yoffse
 #ifdef DEBUG
 	logfile << "Kakadu :: Stripe height increase: re-allocating memory for height " << stripe_heights[0] << endl;
 #endif
+      }
+
+      // Check for zero height, which can occur with incorrect position or size parameters
+      if( stripe_heights[0] == 0 ){
+#ifdef DEBUG
+	logfile << "Kakadu :: Error: Zero stripe height" << endl;
+#endif
+	throw 1;
       }
 
 
