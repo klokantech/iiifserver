@@ -29,9 +29,14 @@ using namespace std;
 
 void JTL::send( Session* session, int resolution, int tile ){
 
+  Timer function_timer;
+  
   if( session->loglevel >= 3 ) (*session->logfile) << "JTL handler reached" << endl;
 
-  Timer function_timer;
+
+  // Make sure we have set our image
+  this->session = session;
+  checkImage();
 
 
   // Time this command
@@ -63,16 +68,30 @@ void JTL::send( Session* session, int resolution, int tile ){
     throw error.str();
   }
 
+
   TileManager tilemanager( session->tileCache, *session->image, session->watermark, session->jpeg, session->logfile, session->loglevel );
 
   CompressionType ct;
+
+  // Request uncompressed tile if raw pixel data is required for processing
   if( (*session->image)->getNumBitsPerPixel() > 8 || (*session->image)->getColourSpace() == CIELAB
       || (*session->image)->getNumChannels() == 2 || (*session->image)->getNumChannels() > 3
-      || session->view->getContrast() != 1.0 || session->view->getGamma() != 1.0
-      || session->view->getRotation() != 0.0 || session->view->shaded
-      || session->view->cmapped || session->view->inverted
-      || session->view->ctw.size() ) ct = UNCOMPRESSED;
+      || ( session->view->colourspace==GREYSCALE && (*session->image)->getNumChannels()==3 &&
+	   (*session->image)->getNumBitsPerPixel()==8 )
+      || session->view->floatProcessing()
+      || session->view->getRotation() != 0.0 || session->view->flip != 0
+      ) ct = UNCOMPRESSED;
   else ct = JPEG;
+
+
+  // Embed ICC profile
+  if( session->view->embedICC() && ((*session->image)->getMetadata("icc").size()>0) ){
+    if( session->loglevel >= 3 ){
+      *(session->logfile) << "JTL :: Embedding ICC profile with size "
+			  << (*session->image)->getMetadata("icc").size() << " bytes" << endl;
+    }
+    session->jpeg->setICCProfile( (*session->image)->getMetadata("icc") );
+  }
 
 
   RawTile rawtile = tilemanager.getTile( resolution, tile, session->view->xangle,

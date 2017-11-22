@@ -69,7 +69,7 @@ void IIIF::run( Session* session, const string& src )
 
   // Check if there is slash in argument and if it is not last / first character, extract identifier and suffix
   size_t lastSlashPos = argument.find_last_of("/");
-  if ( lastSlashPos < argument.length() && lastSlashPos > 0 ){
+  if ( lastSlashPos != string::npos ){
 
     suffix = argument.substr( lastSlashPos + 1, string::npos );
 
@@ -80,16 +80,13 @@ void IIIF::run( Session* session, const string& src )
     else{
       size_t positionTmp = lastSlashPos;
       for ( int i = 0; i < 3; i++ ){
-        positionTmp = argument.substr(0, positionTmp).find_last_of("/");
+        positionTmp = argument.find_last_of("/", positionTmp - 1);
+        if ( positionTmp == string::npos ){
+          throw invalid_argument( "IIIF: Not enough parameters" );
+        }
       }
-      if ( positionTmp > 0 ){
-        filename = argument.substr(0, positionTmp);
-        params = argument.substr(positionTmp + 1, string::npos);
-      }
-      else{
-        // No extra parameters
-        throw invalid_argument( "IIIF: Not enough parameters" );
-      }
+      filename = argument.substr(0, positionTmp);
+      params = argument.substr(positionTmp + 1, string::npos);
     }
   }
   else{
@@ -555,6 +552,7 @@ void IIIF::run( Session* session, const string& src )
   if ( ( session->view->maintain_aspect && (requested_res > 0) &&
          (requested_width == tw) && (requested_height == th) &&
          (view_left % tw == 0) && (view_top % th == 0) &&
+         (session->view->getViewWidth() % tw == 0) && (session->view->getViewHeight() % th == 0) &&
          (session->view->getViewWidth() < im_width) && (session->view->getViewHeight() < im_height) )
        ||
        ( session->view->maintain_aspect && (requested_res == 0) &&
