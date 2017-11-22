@@ -1,13 +1,13 @@
 /*  IIP Server: Kakadu JPEG2000 handler
 
 
-    Development supported by Moravian Library in Brno (Moravska zemska
+    Initial development supported by Moravian Library in Brno (Moravska zemska
     knihovna v Brne, http://www.mzk.cz/) R&D grant MK00009494301 & Old
     Maps Online (http://www.oldmapsonline.org/) from the Ministry of
     Culture of the Czech Republic.
 
 
-    Copyright (C) 2009-2016 IIPImage.
+    Copyright (C) 2009-2017 IIPImage.
     Author: Ruven Pillay
 
     This program is free software; you can redistribute it and/or modify
@@ -125,8 +125,15 @@ void KakaduImage::loadImageInfo( int seq, int ang ) throw(file_error)
   jp2_resolution j2k_resolution;
   jp2_colour j2k_colour;
   kdu_coords layer_size;
+  jpx_layer_source jpx_layer;
 
-  jpx_layer_source jpx_layer = jpx_input.access_layer(0);
+  // Malformed images can throw exceptions here with older versions of Kakadu 
+  try{
+    jpx_layer = jpx_input.access_layer(0);
+  }
+  catch( ... ){
+    throw file_error( "Kakadu :: Core Exception Caught During Metadata Extraction"); // Rethrow the exception
+  }
 
   j2k_channels = jpx_layer.access_channels();
   j2k_resolution = jpx_layer.access_resolution();
@@ -218,6 +225,12 @@ void KakaduImage::loadImageInfo( int seq, int ang ) throw(file_error)
 	    << " entries/LUT with values " << lut[0] << "," << lut[1] << endl;
 #endif
   }
+
+
+  // Extract any ICC profile and add it to our metadata map
+  int icc_length = 0;
+  const char* icc = (const char*) j2k_colour.get_icc_profile( &icc_length );
+  if( icc_length > 0 ) metadata["icc"] = string( icc, icc_length );
 
 
   // Set our colour space - we let Kakadu automatically handle CIELAB->sRGB conversion for the time being
@@ -422,6 +435,7 @@ RawTile KakaduImage::getRegion( int seq, int ang, unsigned int res, int layers, 
 // Main processing function
 void KakaduImage::process( unsigned int res, int layers, int xoffset, int yoffset, unsigned int tw, unsigned int th, void *d ) throw (file_error)
 {
+
   // Scale up our output bit depth to the nearest factor of 8
   unsigned int obpc = bpc;
   if( bpc <= 16 && bpc > 8 ) obpc = 16;
@@ -516,6 +530,14 @@ void KakaduImage::process( unsigned int res, int layers, int xoffset, int yoffse
     logfile << "Kakadu :: mapped resolution region size: " << comp_dims.size.x << "x" << comp_dims.size.y << endl;
     logfile << "Kakadu :: About to pull stripes" << endl;
 #endif
+
+    // Make sure we don't have zero-sized images
+    if( comp_dims.size.x == 0 || comp_dims.size.y == 0 ){
+#ifdef DEBUG
+      logfile << "Kakadu :: Error: region of zero size requested" << endl;
+#endif
+      throw 1;
+    }
 
     int index = 0;
     bool continues = true;

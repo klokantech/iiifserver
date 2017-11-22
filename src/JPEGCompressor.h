@@ -1,6 +1,6 @@
 /*  JPEG class wrapper to ijg jpeg library
 
-    Copyright (C) 2000-2012 Ruven Pillay.
+    Copyright (C) 2000-2017 Ruven Pillay.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,10 +23,9 @@
 #define _JPEGCOMPRESSOR_H
 
 
+#include "Compressor.h"
 
-#include <cstdio>
-#include <string>
-#include "RawTile.h"
+
 
 
 extern "C"{
@@ -57,7 +56,7 @@ typedef iip_destination_mgr * iip_dest_ptr;
 
 /// Wrapper class to the IJG JPEG library
 
-class JPEGCompressor{
+class JPEGCompressor: public Compressor{
 	
  private:
 
@@ -82,17 +81,23 @@ class JPEGCompressor{
   iip_destination_mgr dest_mgr;
   iip_dest_ptr dest;
 
+  /// Write ICC profile
+  void writeICCProfile();
+
+  /// Write XMP metadata
+  void writeXMPMetadata();
+
 
  public:
 
   /// Constructor
   /** @param quality JPEG Quality factor (0-100) */
-   JPEGCompressor( int quality ) { Q = quality; dest = NULL; };
+  JPEGCompressor( int quality ) { Q = quality; dest = NULL; };
 
 
   /// Set the compression quality
   /** @param factor Quality factor (0-100) */
-  void setQuality( int factor ) {
+  inline void setQuality( int factor ) {
     if( factor < 0 ) Q = 0;
     else if( factor > 100 ) Q = 100;
     else Q = factor;
@@ -100,7 +105,7 @@ class JPEGCompressor{
 
 
   /// Get the current quality level
-  int getQuality() { return Q; }
+  inline int getQuality() { return Q; }
 
 
   /// Initialise strip based compression
@@ -126,23 +131,21 @@ class JPEGCompressor{
    */
   unsigned int Finish( unsigned char* output ) throw (std::string);
 
-
   /// Compress an entire buffer of image data at once in one command
   /** @param t tile of image data */
   int Compress( RawTile& t ) throw (std::string);
 
-
-  /// Add metadata to the JPEG header
-  /** @param m metadata */
-  void addMetadata( const std::string& m );
-
-
   /// Return the JPEG header size
-  unsigned int getHeaderSize() { return header_size; }
+  inline unsigned int getHeaderSize() { return header_size; }
 
   /// Return a pointer to the header itself
   inline unsigned char* getHeader() { return header; }
 
+  /// Return the JPEG mime type
+  inline const char* getMimeType(){ return "image/jpeg"; }
+
+  /// Return the image filename suffix
+  inline const char* getSuffix(){ return "jpg"; }
 
 };
 
